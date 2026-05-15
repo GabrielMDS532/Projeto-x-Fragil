@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="Pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios</title>
+</head>
+<body>
+
+    <!-- Menu Lateral !-->
+    <div class="menu">
+        <div class="titulo">
+            <h3>Sistema de Triagem Clínica</h3>
+        </div>
+        <!-- Botões de paginas do menu !-->
+        <div class="Paginas"> 
+            <button class="btn-dashboard">Dashboard</button>
+            <button class="btn-pacientes">Pacientes</button>
+            <button class="btn-avaliacoes">Avaliações</button>
+            <button class="btn-relatorios">Relatórios</button>
+            <button class="btn-usuarios">Usuários</button>
+        </div>
+        
+        <!--Acesso Usuario Cabeçalho -->
+        <div class="Acesso_usuario"> 
+            <div class="botao_acesso_usuario">
+            <button class="btn-acesso_usuario">Icone</button>
+            </div>
+        </div>
+
+        <!-- Botão de Logout !-->
+        <div class="logout">  
+            <button class="btn-logout">Logout</button>
+        </div>
+    </div>
+
+    <div class ="Pricipal"> 
+        <div class="container_area">
+            
+            <div class="Mensagem_entrada">
+                <h3>Adicionar novo paciente</h3>
+            </div>
+
+            <div class="formulario_paciente">
+                <form>
+                    <label for="nome">Nome:</label>
+                    <input type="text" id="nome" name="nome" required><br><br>
+
+                    <label for="data_nascimento">Data de Nascimento:</label>
+                    <input type="date" id="data_nascimento" name="data_nascimento" required><br><br>
+
+                    <label for="sexo">Sexo:</label>
+                    <select id="sexo" name="sexo" required>
+                        <option value="">Selecione</option>
+                        <option value="masculino">Masculino</option>
+                        <option value="feminino">Feminino</option>
+                        <option value="outro">Outro</option>
+                    </select><br><br>
+
+                    <label for="telefone">Telefone:</label>
+                    <input type="tel" id="telefone" name="telefone"><br><br>
+
+                    <label for="cpf">CPF:</label>
+                    <input type="text" id="cpf" name="cpf" required><br><br>
+                    
+                    <button type="submit">Salvar</button>
+                    <button type="button">Cancelar</button>
+                </form>  
+
+                <!-- Mensagem de Entrada e Botão de novo paciente !-->
+            <div class="Mensagem_secundaria">  
+                <
+                <button class="btn-adicionar_paciente">Adicionar Paciente</button>
+            </div>
+
+            <!-- Lista de Pacientes !-->
+            <div class="Lista de Pacientes">
+                <h4>Lista de Pacientes</h4>
+                <label for="pesquisa">Pesquisar:</label>
+                <input type="text" id="pesquisa" name="pesquisa" placeholder="Digite o nome do paciente..."><br><br>
+
+                   <!-- Aqui será exibida a lista de pacientes cadastrados -->
+                <div class="pacientes_cadastrados">
+                    <p>Nome do Paciente 1</p>
+                </div>
+                
+                <button class="btn-editar_paciente">Editar Paciente</button>
+                <button class="btn-excluir_paciente">Excluir Paciente</button>
+            </div>
+
+        </div>
+    </div>
+</body>
