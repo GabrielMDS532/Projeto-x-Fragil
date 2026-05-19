@@ -1,0 +1,174 @@
+CREATE DATABASE  IF NOT EXISTS `x_fragil` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `x_fragil`;
+-- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
+--
+-- Host: localhost    Database: x_fragil
+-- ------------------------------------------------------
+-- Server version	8.0.43
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `auditoria`
+--
+
+DROP TABLE IF EXISTS `auditoria`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `auditoria` (
+  `id_auditoria` int NOT NULL AUTO_INCREMENT,
+  `tabela_afetada` varchar(100) NOT NULL,
+  `operacao` enum('INSERT','UPDATE','DELETE') NOT NULL,
+  `id_registro` int NOT NULL,
+  `usuario_id` int DEFAULT NULL,
+  `dado_anterior` json DEFAULT NULL,
+  `dado_novo` json DEFAULT NULL,
+  `data_auditoria` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `ip_origem` varchar(45) DEFAULT NULL,
+  `observacao` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id_auditoria`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `auditoria`
+--
+
+LOCK TABLES `auditoria` WRITE;
+/*!40000 ALTER TABLE `auditoria` DISABLE KEYS */;
+/*!40000 ALTER TABLE `auditoria` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `paciente`
+--
+
+DROP TABLE IF EXISTS `paciente`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `paciente` (
+  `id_paciente` int NOT NULL AUTO_INCREMENT,
+  `nome_paciente` varchar(255) NOT NULL,
+  `sexo_paciente` enum('M','F') NOT NULL,
+  `data_nascimento_paciente` date NOT NULL,
+  `nome_responsavel` varchar(255) DEFAULT NULL,
+  `telefone_paciente` varchar(20) NOT NULL,
+  `observacoes_paciente` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id_paciente`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `paciente`
+--
+
+LOCK TABLES `paciente` WRITE;
+/*!40000 ALTER TABLE `paciente` DISABLE KEYS */;
+/*!40000 ALTER TABLE `paciente` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `relatorio`
+--
+
+DROP TABLE IF EXISTS `relatorio`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `relatorio` (
+  `id_relatorio` int NOT NULL AUTO_INCREMENT,
+  `usuario_id_relatorio` int NOT NULL,
+  `paciente_id_relatorio` int NOT NULL,
+  `score_relatorio` int NOT NULL,
+  `resultado_relatorio` enum('RECOMENDADO','NAO_RECOMENDADO') DEFAULT 'NAO_RECOMENDADO',
+  `data_relatorio` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `observacoes_relatorio` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id_relatorio`),
+  KEY `usuario_id_relatorio` (`usuario_id_relatorio`),
+  KEY `paciente_id_relatorio` (`paciente_id_relatorio`),
+  CONSTRAINT `relatorio_ibfk_1` FOREIGN KEY (`usuario_id_relatorio`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE,
+  CONSTRAINT `relatorio_ibfk_2` FOREIGN KEY (`paciente_id_relatorio`) REFERENCES `paciente` (`id_paciente`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `relatorio`
+--
+
+LOCK TABLES `relatorio` WRITE;
+/*!40000 ALTER TABLE `relatorio` DISABLE KEYS */;
+/*!40000 ALTER TABLE `relatorio` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `usuario`
+--
+
+DROP TABLE IF EXISTS `usuario`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `usuario` (
+  `id_usuario` int NOT NULL AUTO_INCREMENT,
+  `nome_usuario` varchar(255) NOT NULL,
+  `sobrenome_usuario` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `senha` varchar(255) NOT NULL,
+  `tipo_usuario` enum('USUARIO','ADMIN') DEFAULT 'USUARIO',
+  `data_criacao` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_usuario`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `usuario`
+--
+
+LOCK TABLES `usuario` WRITE;
+/*!40000 ALTER TABLE `usuario` DISABLE KEYS */;
+/*!40000 ALTER TABLE `usuario` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `usuario_paciente`
+--
+
+DROP TABLE IF EXISTS `usuario_paciente`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `usuario_paciente` (
+  `usuario_id_cadastrado` int NOT NULL,
+  `paciente_id_cadastrado` int NOT NULL,
+  PRIMARY KEY (`usuario_id_cadastrado`,`paciente_id_cadastrado`),
+  KEY `paciente_id_cadastrado` (`paciente_id_cadastrado`),
+  CONSTRAINT `usuario_paciente_ibfk_1` FOREIGN KEY (`usuario_id_cadastrado`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE,
+  CONSTRAINT `usuario_paciente_ibfk_2` FOREIGN KEY (`paciente_id_cadastrado`) REFERENCES `paciente` (`id_paciente`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `usuario_paciente`
+--
+
+LOCK TABLES `usuario_paciente` WRITE;
+/*!40000 ALTER TABLE `usuario_paciente` DISABLE KEYS */;
+/*!40000 ALTER TABLE `usuario_paciente` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-05-19 14:43:22
