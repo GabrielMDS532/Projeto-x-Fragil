@@ -9,6 +9,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f5f5f5;
     color: #333;
+    display: inline;
 }
 
 /* Página de Login */
@@ -21,6 +22,9 @@ body {
     
 }
 
+/*
+container_login aplica estilização no blco onde tem o formulário para o login.
+*/
 .container_login {
     background: white;
     padding: 50px 40px; /* Da mais espaço interno */
@@ -31,7 +35,7 @@ body {
     text-align: center; /* Aqui Centraliza o texto e ícone */
 }
 
-.container_login h2 {
+.container_login h2 {/* Aplica estilos no título do formulário de login */
     color: #1a202c;
     margin-bottom: 10px;
     font-size: 32px;
@@ -80,10 +84,6 @@ body {
 }
 
 .container_login p {
-    /*text-align: center;
-    margin-top: 20px;
-    font-size: 14px;
-    color: #666;*/
     color: #718096;
     margin-bottom: 30px;
 }
@@ -95,6 +95,114 @@ body {
 
 .container_login a:hover {
     text-decoration: underline;
+}
+
+.container_recovery {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e9f2ff;
+}
+
+
+
+.container_login_recover{ /* Bloco da div que contém meu container pra recuperar a senha*/
+    background: rgb(234, 227, 227);
+    width: 400px;
+    height:500px;
+    padding:32px;
+    border-radius:32px;
+    box-shadow: 5px 20px 20px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    justify-content: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Define quais propriedades vai animar e a duração da animação */
+
+}
+
+label {
+    display: block;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 20px;
+}
+
+#email{ /* Estilização do campo de email da página de recuperar senha */
+    width:auto;
+    padding: 5px;
+    border-radius: 5px;
+    margin-bottom: 15px; 
+}
+
+#emailError{
+    display: none; /* Estilização da mensagem de erro do campo de email */
+    color: red;
+    font-size: 14px;
+    margin-top: -10px;
+    margin-bottom: 10px;
+}
+
+#senhaError{
+    display: none;
+    color: red;
+    font-size: 14px;
+    margin-top: -10px;
+    margin-bottom: 10px;
+}
+
+
+.container_login_recover:hover {
+    transform: translateY(-5px); /* Move o card para cima */
+    box-shadow: 5px 25px 25px 10px rgba(0, 0, 0, 0.15); /* Aumenta a sombra para dar mais destaque */
+}
+
+.header h2{ /* estilização do título de recuperar senha*/
+    color: #1a202c;
+    margin-bottom: 10px;
+    font-size: 32px;
+    font-weight: 500;
+}
+
+.icon_recover{/* Estilização do icone de recuperar senha*/
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    margin-bottom: 20px;
+
+}
+
+.txt_descricao{
+    padding: 20px;
+    font-size: 18px;
+}
+
+.btn_Recover_password{
+    margin: 15px;
+    padding: 2%;
+    border-color: black;
+    border-radius: 10px;
+}
+
+.login_footer{
+    position: fixed;
+    bottom: -100px; /* Começa escondida debaixo da tela*/
+    left: 50%;
+    transform: translateX(-50%); /* Centraliza na tela horizontalmente*/
+    color: rgb(14, 2, 2);
+    padding: 16px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    opacity: 0;
+    transition: bottom 0.4s ease, opacity 0.4s ease; /* Cria o efeito de subida suave*/
+
+}
+
+.login_footer.mostrar{
+    bottom: 40px;
+    opacity: 1;
+    border-color: black;
 }
 
 /* Layout com Menu Lateral */

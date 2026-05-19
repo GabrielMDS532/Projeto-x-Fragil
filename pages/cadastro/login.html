@@ -13,11 +13,13 @@
             <p style="text-align: center; color: #666; margin-bottom: 30px;">Sistema de apoio à triagem clínica</p>
 
             <form id="loginForm">
-                <label for="email">Email / Usuário:</label>
-                <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+                <label for="Email">Email / Usuário:</label>
+                <input type="email" id="Email" name="email" placeholder="seu@email.com" required>
+                <span id="emailError">Por favor, insira um email válido.</span>
 
                 <label for="senha">Senha:</label>
                 <input type="password" id="senha" name="senha" placeholder="••••••••" required>
+                <span id="senhaError">A senha deve conter pelo menos 6 caracteres.</span>
 
                 <button type="submit">Entrar</button>
 
@@ -30,24 +32,7 @@
         </div>
     </div>
 
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const senha = document.getElementById('senha').value;
-            
-            // Verificar credenciais (demo)
-            const isAdmin = email === 'admin@clinica.com';
-            
-            // Salvar dados no localStorage
-            localStorage.setItem('userEmail', email);
-            localStorage.setItem('isAdmin', isAdmin);
-            localStorage.setItem('isLoggedIn', 'true');
-            
-            // Redirecionar para dashboard
-            window.location.href = 'dashboard.html';
-        });
-    </script>
+<script src="../../js/login.js"></script>
+
 </body>
 </html>

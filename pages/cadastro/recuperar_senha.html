@@ -1,23 +1,48 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recuperar Senha</title>
+    <link rel="stylesheet" href="../../styles/global.css">
+    <title>Recuperar Senha - Sistema de Triagem Clínica</title>
 </head>
 <body>
-    <div class="principal">
-        <div class="container_recuperar_senha">
-            <h2>Recuperar Senha</h2>
-            <form>
-                <label for="email">Digite seu email para recuperar a senha:</label>
-                <input type="email" id="email" name="email" required><br><br>
+    <div class="container_recovery">
+        <div class="container_login_recover">
+            <div class="header">
+                <a href="https://www.flaticon.com/br/icones-gratis/recuperacao-de-conta" title="recuperacao-de-conta ícones" target="_blank" rel="noopener noreferrer">
+                <img src="../assets/recuperacao-de-conta.png" alt="ícone de recuper senha" class="icon_recover"></a>
+                
+                <h2>Recuperar Senha</h2>
+                <p class="txt_descricao">Digite seu e-mail para recuperar sua senha</p>
+            </div>
+            
+            <form id ="form_recuperar" onsubmit="recoverPassword(event)">
+                <div class="form_group">
 
-                <button type="submit">Enviar Link de Recuperação</button>
-                <p>Voltar para <a href="login.html">Login</a></p>
+                    <label for="email">E-mail:</label>
+                    <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+                    <span id="emailError">Por favor, insira um email válido.</span>
+                </div>
+                <div class="form_actions">
+
+                    <button class="btn_Recover_password" type="submit">Enviar Link de Recuperação</button>
+                    <p class="txt_link_login">
+                        Lembrou sua senha? <a href="login.html">Fazer Login</a>
+                        </p>
+                </div>
+
+                
             </form>
         </div>
     </div>
+
+    <div id ="link_enviado" class="login_footer">
+        <p> 
+            Link de recuperação enviado com sucesso! Verifique sua caixa de entrada.
+        </p>
+    </div>
+
+    <script src="../../js/recuperarSenha.js"></script>
 </body>
 </html>
