@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecionando...</title>
+</head>
+<body>
+    <p>Redirecionando...</p>
+    <script>
+        // Verificar se o usuário está logado
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        
+        if (isLoggedIn === 'true') {
+            // Redirecionar para o dashboard
+            window.location.href = 'dashboard.html';
+        } else {
+            // Redirecionar para a página de login
+            window.location.href = 'cadastro/login.html';
+        }
+    </script>
+</body>
+</html>
