@@ -3,7 +3,7 @@ if (formulario) {
     formulario.addEventListener('submit', getLogin);
 }
 
-function getLogin(event) {
+async function getLogin(event) {
     event.preventDefault();
     
     let email = document.getElementById('Email').value.trim();
@@ -11,16 +11,18 @@ function getLogin(event) {
     const emailError = document.querySelector('#emailError');
     const senhaError = document.querySelector('#senhaError');
 
+//serve para limpar os erros anteriores
     emailError.style.display = 'none';
     senhaError.style.display = 'none';
 
     let hasError = false;
 
+    // ver se os campos não estão vazios
     if (email === '' || !email.includes('@')) {
         emailError.style.display = 'block';
         hasError = true;
     }
-    
+    //ver se a senha não está vazia e tem mais de 6 caracteres
     if (senha === '' || senha.length < 6) {
         senhaError.style.display = 'block';
         hasError = true;
@@ -28,18 +30,35 @@ function getLogin(event) {
 
     if (hasError) return;
 
-    // Autenticação contra dados do banco simulado e credencial padrão
-    const usuariosSalvos = JSON.parse(localStorage.getItem('usuariosSimulados') || '[]');
-    const usuarioEncontrado = usuariosSalvos.find(u => u.email === email && u.senha === senha);
+    // Tenta fazer o login no backend real
+    try {
+        const resposta = await fetch('http://localhost:3000/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email: email, senha: senha })
+        });
 
-    if (email === 'admin@clinica.com' && senha === 'admin123') {
-        salvarSecao(email, true, "Administrador");
-    } else if (usuarioEncontrado) {
-        const display = `${usuarioEncontrado.nome_usuario} ${usuarioEncontrado.sobrenome_usuario}`;
-        salvarSecao(usuarioEncontrado.email, usuarioEncontrado.tipo_usuario === 'ADMIN', display);
-    } else {
+        const dados = await resposta.json();
+
+        // Se o servidor respondeu "sucesso: true"
+        if (dados.sucesso) {
+            const user = dados.usuario;
+            const display = `${user.nome_usuario} ${user.sobrenome_usuario}`;
+            const isAdmin = user.tipo_usuario === 'ADMIN';
+            
+            salvarSecao(user.email, isAdmin, display);
+        } else {
+            // Se o servidor disse que a senha tá errada
+            senhaError.style.display = 'block';
+            senhaError.textContent = dados.mensagem;
+        }
+
+    } catch (erro) {
+        console.error("Erro na comunicação com o servidor:", erro);
         senhaError.style.display = 'block';
-        senhaError.textContent = "E-mail ou senha incorretos.";
+        senhaError.textContent = "Erro ao conectar com o servidor. Verifique se o Node.js está rodando!";
     }
 }
 
@@ -50,5 +69,6 @@ function salvarSecao(email, isAdmin, userDisplayName) {
     localStorage.setItem('userEmail', email);
     localStorage.setItem('userDisplayName', userDisplayName);
 
+    // Redireciona para o Dashboard
     window.location.href = '../Principais/dashboard.html';
 }
