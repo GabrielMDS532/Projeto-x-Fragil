@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../styles/global.css">
+    <title>Usuários - Sistema de Triagem Clínica</title>
+</head>
+<body class="dashboard-layout">
+
+    <!-- Menu Lateral -->
+    <div class="menu">
+        <div class="titulo">
+            <h3>Sistema de Triagem Clínica</h3>
+            <p>MVP</p>
+        </div>
+        <div class="Paginas">
+            <button onclick="navigate('dashboard.html')">📊 Dashboard</button>
+            <button onclick="navigate('pacientes.html')">👥 Pacientes</button>
+            <button onclick="navigate('../Secundarias/nova_avaliacao.html')">📋 Nova Avaliação</button>
+            <button onclick="navigate('relatorios.html')">📄 Relatórios</button>
+            <button class="active" onclick="navigate('usuarios.html')">⚙️ Usuários</button>
+        </div>
+        <div class="Acesso_usuario">
+            <button class="btn-acesso_usuario" id="userInfo">👤 Usuário</button>
+        </div>
+        <div class="logout">
+            <button class="btn-logout" onclick="logout()">🚪 Sair</button>
+        </div>
+    </div>
+
+    <!-- Principal -->
+    <div class="Principal">
+        <div class="container_area">
+            
+            <div class="Mensagem_entrada">
+                <div>
+                    <h4>Gerenciar Usuários</h4>
+                    <p style="color: #f59e0b; font-size: 14px; margin-top: 5px;">⚠️ Área restrita para administradores</p>
+                </div>
+                <button class="btn-primary" onclick="toggleForm()">➕ Novo Usuário</button>
+            </div>
+
+            <!-- Formulário de Novo Usuário -->
+            <div id="userForm" class="form-container hidden mb-20">
+                <h4 style="margin-bottom: 20px;">Cadastrar Usuário</h4>
+                <form id="newUserForm" onsubmit="saveUser(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nome_usuario">Nome *</label>
+                            <input type="text" id="nome_usuario" required placeholder="Digite o primeiro nome">
+                        </div>
+                        <div class="form-group">
+                            <label for="sobrenome_usuario">Sobrenome *</label>
+                            <input type="text" id="sobrenome_usuario" required placeholder="Digite o sobrenome">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">E-mail *</label>
+                            <input type="email" id="email" required placeholder="exemplo@clinica.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="senha">Senha *</label>
+                            <input type="password" id="senha" required placeholder="Mínimo 6 caracteres">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="tipo_usuario">Tipo de Usuário *</label>
+                            <select id="tipo_usuario" required>
+                                <option value="USUARIO">Usuário Padrão</option>
+                                <option value="ADMIN">Administrador</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button type="submit" class="btn-primary">Salvar Usuário</button>
+                        <button type="button" class="btn-secondary" onclick="toggleForm()">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tabela de Usuários -->
+            <div class="tabela-pacientes">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome Completo</th>
+                            <th>E-mail</th>
+                            <th>Tipo de Usuário</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Renderizado dinamicamente pelo JavaScript para remover dados mockados permanente -->
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="../../js/usuarios.js"></script>
+</body>
+</html>

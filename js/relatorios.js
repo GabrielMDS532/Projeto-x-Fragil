@@ -1,15 +1,6 @@
 /**
  * =========================================================================
- * 1. CONFIGURAÇÕES E DADOS DE AMOSTRA (MOCK DATA TEMPORÁRIO)
- * =========================================================================
- */
-const DADOS_AMOSTRA_PACIENTES = [
-    { nome: "Pedro Costa", data: "07/05/2026", score: "0.68", status: "Encaminhamento" },
-];
-
-/**
- * =========================================================================
- * 2. CONTROLE DE ACESSO E SEGURANÇA
+ * 1. CONTROLE DE ACESSO E SEGURANÇA
  * =========================================================================
  */
 function verificarAutenticacao() {
@@ -23,53 +14,60 @@ function verificarAutenticacao() {
 
 /**
  * =========================================================================
- * 3. LOGICA PRINCIPAL DA DASHBOARD
+ * 2. INICIALIZAÇÃO DA PÁGINA
  * =========================================================================
  */
-function inicializarDashboard() {
+function inicializarRelatorios() {
     if (!verificarAutenticacao()) return;
 
-    // Recupera os dados do usuário logado do localStorage
+    // Carregar informações do cabeçalho/menu lateral
     const userEmail = localStorage.getItem('userEmail') || '';
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
     const userDisplayName = localStorage.getItem('userDisplayName') || userEmail.split('@')[0] || 'Usuário';
     
     const userDisplayNameFormated = userDisplayName.charAt(0).toUpperCase() + userDisplayName.slice(1);
 
-    const welcomeElement = document.getElementById('welcomeMessage');
     const userInfoElement = document.getElementById('userInfo');
-
-    if (welcomeElement) welcomeElement.textContent = `Olá, ${userDisplayNameFormated}!`;
     if (userInfoElement) userInfoElement.textContent = `👤 ${userDisplayNameFormated}`;
 
-    // Controle de Nível de Acesso (Admin vs Usuário Comum)
-    configurarNivelAcesso(isAdmin);
-
-    // Carrega dados da dashboard
-    carregarDadosDashboard();
-}
-
-function configurarNivelAcesso(isAdmin) {
+    // Nível de acesso
     const btnUsuarios = document.getElementById('btnUsuarios');
-    const quickAccessUsuarios = document.getElementById('quickAccessUsuarios');
-
-    if (!isAdmin) {
-        if (btnUsuarios) btnUsuarios.style.display = 'none';
-        if (quickAccessUsuarios) quickAccessUsuarios.style.display = 'none';
+    if (!isAdmin && btnUsuarios) {
+        btnUsuarios.style.display = 'none';
     }
-}
 
-async function carregarDadosDashboard() {
-    try {
-        console.log("Dados carregados com sucesso para a Dashboard:", DADOS_AMOSTRA_PACIENTES);
-    } catch (error) {
-        console.error("Erro ao buscar dados para a dashboard:", error);
+    const btnExportar = document.getElementById('btnExportar');
+    if (btnExportar) {
+        btnExportar.addEventListener('click', exportarRelatorio);
     }
 }
 
 /**
  * =========================================================================
- * 4. FUNÇÕES GLOBAIS DE NAVEGAÇÃO E SESSÃO
+ * 3. LÓGICA DE EXPORTAÇÃO E BUSCA DE DADOS (PRONTO PARA API)
+ * =========================================================================
+ */
+async function exportarRelatorio() {
+    const filtroDataInicio = document.getElementById('dataInicio')?.value || '';
+    const filtroDataFim = document.getElementById('dataFim')?.value || '';
+
+    const parametrosFiltro = {
+        inicio: filtroDataInicio,
+        fim: filtroDataFim
+    };
+
+    try {
+        console.log("Solicitando geração de relatório com os filtros:", parametrosFiltro);
+        alert('Relatório exportado com sucesso!');
+    } catch (error) {
+        console.error("Erro ao exportar o relatório:", error);
+        alert("Houve um erro técnico ao gerar o arquivo de relatório.");
+    }
+}
+
+/**
+ * =========================================================================
+ * 4. NAVEGAÇÃO E SESSÃO GLOBAIS
  * =========================================================================
  */
 function navigate(page) {
@@ -83,9 +81,9 @@ function logout() {
     localStorage.removeItem('userRole');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userDisplayName');
-    
+
     window.location.href = '../cadastro/login.html';
 }
 
-// Inicializa tudo automaticamente
-document.addEventListener('DOMContentLoaded', inicializarDashboard);
+// Inicializa o script
+document.addEventListener('DOMContentLoaded', inicializarRelatorios);

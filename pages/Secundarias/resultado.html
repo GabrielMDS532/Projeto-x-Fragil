@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../styles/global.css">
+    <title>Resultado da Triagem - Sistema de Triagem Clínica</title>
+</head>
+<body class="dashboard-layout">
+
+    <!-- Menu Lateral -->
+    <div class="menu">
+        <div class="titulo">
+            <h3>Sistema de Triagem Clínica</h3>
+            <p>MVP</p>
+        </div>
+        <div class="Paginas">
+            <button onclick="navigate('../Principais/dashboard.html')">📊 Dashboard</button>
+            <button onclick="navigate('../Principais/pacientes.html')">👥 Pacientes</button>
+            <button class="active" onclick="navigate('nova_avaliacao.html')">📋 Nova Avaliação</button>
+            <button onclick="navigate('../Principais/relatorios.html')">📄 Relatórios</button>
+            <button onclick="navigate('../Principais/usuarios.html')" id="btnUsuarios">⚙️ Usuários</button>
+        </div>
+        <div class="Acesso_usuario">
+            <button class="btn-acesso_usuario" id="userInfo">👤 Usuário</button>
+        </div>
+        <div class="logout">
+            <button class="btn-logout" onclick="logout()">🚪 Sair</button>
+        </div>
+    </div>
+
+    <!-- Principal -->
+    <div class="Principal">
+        <div class="container_area">
+            
+            <div class="Mensagem_entrada">
+                <div>
+                    <button class="btn-secondary" onclick="navigate('nova_avaliacao.html')" style="margin-right: 15px;">← Voltar</button>
+                    <h4 style="display: inline;">Resultado da Triagem</h4>
+                </div>
+            </div>
+
+            <div class="resultado-card">
+                <div class="info-paciente-box">
+                    <h4 style="margin-bottom: 15px;">Dados do Paciente</h4>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                        <div>
+                            <p style="color: #64748b; font-size: 14px;">Nome:</p>
+                            <p id="resPatientName" style="font-weight: 600; color: #1e293b;">-</p>
+                        </div>
+                        <div>
+                            <p style="color: #64748b; font-size: 14px;">Sexo:</p>
+                            <p id="resPatientSex" style="font-weight: 600; color: #1e293b;">-</p>
+                        </div>
+                        <div>
+                            <p style="color: #64748b; font-size: 14px;">Idade:</p>
+                            <p id="resPatientAge" style="font-weight: 600; color: #1e293b;">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 style="margin-top: 30px; margin-bottom: 20px;">Análise da Triagem</h4>
+
+                <div class="score-display">
+                    <div class="score-box score">
+                        <h4>Score Calculado</h4>
+                        <div class="valor" id="scoreValue">0.00</div>
+                    </div>
+                    <div class="score-box threshold">
+                        <h4>Limiar (<span id="thresholdSex">-</span>)</h4>
+                        <div class="valor" id="thresholdValue">0.00</div>
+                    </div>
+                </div>
+
+                <div class="recomendacao" id="recommendation">
+                    <h4 id="recTitle" style="display: flex; align-items: center; gap: 10px;">
+                        <span id="recIcon"></span>
+                        <span>Resultado da Triagem</span>
+                        <span class="badge" id="recBadge"></span>
+                    </h4>
+                    <p id="recText" style="margin-top: 15px; line-height: 1.6;"></p>
+                </div>
+
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                    <p style="color: #64748b; font-size: 14px;">Data da Avaliação</p>
+                    <p id="evaluationDate" style="font-weight: 500; color: #1e293b;">-</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="btn-primary" onclick="saveEvaluation()">Salvar Avaliação</button>
+                <button class="btn-secondary" onclick="printResult()">🖨️ Imprimir Formulário</button>
+                <button class="btn-secondary" onclick="navigate('../Principais/pacientes.html')">Voltar para Pacientes</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="../../js/resultado.js"></script>
+</body>
+</html>
