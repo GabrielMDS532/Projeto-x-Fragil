@@ -38,13 +38,12 @@ function inicializarCadastroPaciente() {
 
 /**
  * =========================================================================
- * 3. LÓGICA DE CADASTRO (INTEGRAÇÃO SQL V2 E SIMULAÇÃO API)
+ * 3. LÓGICA DE CADASTRO (CONECTADO AO NODE.JS E MYSQL)
  * =========================================================================
  */
 async function cadastrarPaciente(event) {
     event.preventDefault();
 
-    // Capturando os elementos do formulário usando os IDs idênticos às colunas SQL v2
     const inputNome = document.getElementById('nome_paciente');
     const selectSexo = document.getElementById('sexo_paciente');
     const inputDataNasc = document.getElementById('data_nascimento_paciente');
@@ -54,37 +53,39 @@ async function cadastrarPaciente(event) {
     
     if (!inputNome || !selectSexo || !inputDataNasc || !inputResponsavel || !inputTelefone) return;
 
-    // Montando o objeto JSON com nomes de chaves idênticos às colunas existentes no SQL v2
-    const novoPacienteDB = {
-        id_paciente: 0, // Será auto-incrementado pela simulação do banco
+    // Montando o objeto JSON que será enviado ao Backend
+    const novoPaciente = {
         nome_paciente: inputNome.value.trim(),
-        sexo_paciente: selectSexo.value, // 'M' ou 'F'
-        data_nascimento_paciente: inputDataNasc.value, // YYYY-MM-DD
+        sexo_paciente: selectSexo.value, 
+        data_nascimento_paciente: inputDataNasc.value, 
         nome_responsavel: inputResponsavel.value.trim(),
         telefone_paciente: inputTelefone.value.trim(),
         observacoes_paciente: textareaObservacoes ? textareaObservacoes.value.trim() : null
     };
 
     try {
-        console.log("Simulando envio de Paciente para o Banco (SQL v2):", novoPacienteDB);
+        // Fazendo a requisição real para o servidor
+        const resposta = await fetch('http://localhost:3000/api/pacientes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(novoPaciente)
+        });
 
-        // localStorage usado apenas como simulação temporária de persistência da API
-        const pacientesSalvos = JSON.parse(localStorage.getItem('pacientesSimulados') || '[]');
-        
-        // Auto-incremento do ID
-        novoPacienteDB.id_paciente = pacientesSalvos.length > 0 ? Math.max(...pacientesSalvos.map(p => p.id_paciente)) + 1 : 1;
-        
-        pacientesSalvos.push(novoPacienteDB);
-        localStorage.setItem('pacientesSimulados', JSON.stringify(pacientesSalvos));
+        const dados = await resposta.json();
 
-        alert('Paciente cadastrado com sucesso!');
-        
-        // Redireciona de volta para a lista geral de pacientes
-        window.location.href = '../Principais/pacientes.html';
+        if (dados.sucesso) {
+            alert('Paciente cadastrado com sucesso!');
+            // Redireciona de volta para a lista geral de pacientes
+            window.location.href = '../Principais/pacientes.html';
+        } else {
+            alert('Erro do servidor: ' + dados.mensagem);
+        }
 
     } catch (error) {
         console.error("Erro na requisição de cadastro:", error);
-        alert("Houve um erro técnico ao tentar cadastrar o paciente.");
+        alert("Houve um erro técnico ao tentar cadastrar o paciente. Verifique se o backend está rodando.");
     }
 }
 
@@ -98,7 +99,6 @@ function navigate(page) {
 }
 
 function logout() {
-    // Remoção estrita das chaves de sessão sem apagar os bancos de dados simulados!
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('isAdmin');
     localStorage.removeItem('userRole');

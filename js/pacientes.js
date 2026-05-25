@@ -14,41 +14,10 @@ function verificarAutenticacao() {
 
 /**
  * =========================================================================
- * 2. CONFIGURAÇÕES E DADOS TEMPORÁRIOS DE SIMULAÇÃO (PRONTO PARA API)
+ * 2. CONFIGURAÇÕES E INICIALIZAÇÃO
  * =========================================================================
  */
-let pacientesAtuais = [];
-
-// Dados temporários de amostra (apenas criados caso o banco de dados simulado esteja vazio)
-const PACIENTES_TEMPORARIOS_INICIAIS = [
-    {
-        id_paciente: 1,
-        nome_paciente: "João Silva",
-        sexo_paciente: "M",
-        data_nascimento_paciente: "2018-05-10",
-        nome_responsavel: "Maria Silva",
-        telefone_paciente: "(11) 98888-8888",
-        observacoes_paciente: "Dificuldades de aprendizado relatadas na escola."
-    },
-    {
-        id_paciente: 2,
-        nome_paciente: "Maria Santos",
-        sexo_paciente: "F",
-        data_nascimento_paciente: "2016-08-15",
-        nome_responsavel: "José Santos",
-        telefone_paciente: "(11) 97777-7777",
-        observacoes_paciente: "Atraso no desenvolvimento motor e da fala."
-    },
-    {
-        id_paciente: 3,
-        nome_paciente: "Pedro Costa",
-        sexo_paciente: "M",
-        data_nascimento_paciente: "2020-02-20",
-        nome_responsavel: "Ana Costa",
-        telefone_paciente: "(11) 96666-6666",
-        observacoes_paciente: "Déficit de atenção e movimentos repetitivos."
-    }
-];
+let pacientesAtuais = []; // Agora vai guardar os dados reais do banco
 
 function inicializarPacientes() {
     if (!verificarAutenticacao()) return;
@@ -69,32 +38,34 @@ function inicializarPacientes() {
         btnUsuarios.style.display = 'none';
     }
 
-    // Configurar filtros
+    // Configurar filtros dinâmicos
     configurarFiltros();
 
-    // Carregar dados
+    // Carregar dados reais do Banco de Dados
     carregarPacientes();
 }
 
 /**
  * =========================================================================
- * 3. BUSCA E RENDERIZAÇÃO DOS DADOS (SIMULAÇÃO BANCO DE DADOS / API)
+ * 3. BUSCA E RENDERIZAÇÃO DOS DADOS (CONECTADO AO MYSQL)
  * =========================================================================
  */
 async function carregarPacientes() {
     try {
-        const dadosSalvos = localStorage.getItem('pacientesSimulados');
-        if (dadosSalvos) {
-            pacientesAtuais = JSON.parse(dadosSalvos);
+        // Faz o GET na rota que criamos no server.js
+        const resposta = await fetch('http://localhost:3000/api/pacientes');
+        const dados = await resposta.json();
+
+        if (dados.sucesso) {
+            pacientesAtuais = dados.pacientes; // Salva na memória para os filtros funcionarem
+            renderizarTabela(pacientesAtuais);
         } else {
-            // Inicialização com dados temporários se a base estiver vazia
-            pacientesAtuais = [...PACIENTES_TEMPORARIOS_INICIAIS];
-            localStorage.setItem('pacientesSimulados', JSON.stringify(pacientesAtuais));
+            console.error("Erro do servidor:", dados.mensagem);
+            document.getElementById('patientsTable').innerHTML = `<tr><td colspan="5" style="text-align:center; color: red;">Erro ao carregar pacientes do banco de dados.</td></tr>`;
         }
-        
-        renderizarTabela(pacientesAtuais);
     } catch (error) {
         console.error("Erro ao buscar lista de pacientes:", error);
+        document.getElementById('patientsTable').innerHTML = `<tr><td colspan="5" style="text-align:center; color: red;">Servidor offline. Verifique se o Node.js está rodando.</td></tr>`;
     }
 }
 
@@ -118,7 +89,7 @@ function renderizarTabela(listaDePacientes) {
     tabelaCorpo.innerHTML = '';
 
     if (listaDePacientes.length === 0) {
-        tabelaCorpo.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #64748b;">Nenhum paciente cadastrado.</td></tr>`;
+        tabelaCorpo.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #64748b;">Nenhum paciente encontrado.</td></tr>`;
         return;
     }
 
@@ -129,7 +100,7 @@ function renderizarTabela(listaDePacientes) {
         const sexoExibicao = paciente.sexo_paciente === 'M' ? 'Masculino' : 'Feminino';
         const idadeCalculada = calcularIdade(paciente.data_nascimento_paciente);
         
-        // Formatando data de nascimento legível
+        // Formatando data de nascimento (Lidando com o formato ISO que vem do MySQL)
         const dataFormatada = paciente.data_nascimento_paciente 
             ? new Date(paciente.data_nascimento_paciente).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) 
             : '';
@@ -168,6 +139,7 @@ function filtrarPacientes() {
     const buscaNome = document.getElementById('searchName')?.value.toLowerCase() || '';
     const filtroSexo = document.getElementById('filterSex')?.value || 'todos';
 
+    // Filtra direto na memória usando a lista que veio do banco
     const pacientesFiltrados = pacientesAtuais.filter(paciente => {
         const correspondeNome = paciente.nome_paciente.toLowerCase().includes(buscaNome);
         const correspondeSexo = filtroSexo === 'todos' || paciente.sexo_paciente === filtroSexo;
@@ -180,23 +152,17 @@ function filtrarPacientes() {
 
 /**
  * =========================================================================
- * 5. REMOÇÃO DE PACIENTE (SIMULAÇÃO BANCO DE DADOS / API)
+ * 5. REMOÇÃO DE PACIENTE (Pendente integração com Backend)
  * =========================================================================
  */
 async function excluirPaciente(id) {
-    if (!confirm('Deseja realmente remover este paciente? Esta ação excluirá seus dados do banco simulado.')) return;
+    if (!confirm('Deseja realmente remover este paciente?')) return;
 
-    try {
-        console.log(`Simulando exclusão do Paciente ID: ${id} no Banco`);
-
-        pacientesAtuais = pacientesAtuais.filter(p => p.id_paciente !== id);
-        localStorage.setItem('pacientesSimulados', JSON.stringify(pacientesAtuais));
-        
-        renderizarTabela(pacientesAtuais);
-        alert('Paciente removido com sucesso!');
-    } catch (error) {
-        console.error("Erro ao remover paciente:", error);
-    }
+    alert("Para apagar permanentemente, precisaremos criar uma rota DELETE no server.js. Faremos isso em seguida!");
+    
+    // Remove apenas visualmente da tela por enquanto
+    pacientesAtuais = pacientesAtuais.filter(p => p.id_paciente !== id);
+    renderizarTabela(pacientesAtuais);
 }
 
 /**
@@ -209,7 +175,6 @@ function navigate(page) {
 }
 
 function logout() {
-    // Remoção estrita das chaves de sessão sem apagar os bancos de dados simulados!
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('isAdmin');
     localStorage.removeItem('userRole');

@@ -50,7 +50,68 @@ app.post('/api/login', (req, res) => {
         }
     });
 });
+// Rota para cadastrar novo paciente
+app.post('/api/pacientes', (req, res) => {
+    // Recebe os dados enviados pelo frontend
+    const { 
+        nome_paciente, 
+        sexo_paciente, 
+        data_nascimento_paciente, 
+        nome_responsavel, 
+        telefone_paciente, 
+        observacoes_paciente 
+    } = req.body;
 
+    // Comando SQL para inserir na tabela (o id_paciente é automático)
+    const sql = `
+        INSERT INTO paciente 
+        (nome_paciente, sexo_paciente, data_nascimento_paciente, nome_responsavel, telefone_paciente, observacoes_paciente) 
+        VALUES (?, ?, ?, ?, ?, ?)
+    `;
+
+    // Array com os valores na mesma ordem dos pontos de interrogação
+    const valores = [
+        nome_paciente, 
+        sexo_paciente, 
+        data_nascimento_paciente, 
+        nome_responsavel, 
+        telefone_paciente, 
+        observacoes_paciente
+    ];
+    
+    db.query(sql, valores, (err, results) => {
+        if (err) {
+            console.error("Erro ao inserir paciente no banco:", err);
+            return res.status(500).json({ sucesso: false, mensagem: "Erro ao cadastrar paciente." });
+        }
+
+        // Se deu tudo certo, devolve uma mensagem de sucesso
+        res.json({ 
+            sucesso: true, 
+            mensagem: "Paciente cadastrado com sucesso!", 
+            id_inserido: results.insertId 
+        });
+    });
+});
+
+// Rota para listar todos os pacientes
+app.get('/api/pacientes', (req, res) => {
+    // Busca todos os pacientes ordenados pelo nome
+    const sql = "SELECT * FROM paciente ORDER BY nome_paciente ASC";
+    
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error("Erro ao buscar pacientes no banco:", err);
+            return res.status(500).json({ sucesso: false, mensagem: "Erro ao carregar lista de pacientes." });
+        }
+
+        // Devolve o array de pacientes encontrados
+        res.json({ 
+            sucesso: true, 
+            pacientes: results 
+        });
+    });
+});
 //servidor iniciado na porta 3000
 app.listen(3000, () => {
     console.log('O servidor backend está na porta 3000');
