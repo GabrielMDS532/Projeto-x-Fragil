@@ -32,7 +32,7 @@ function calcularIdade(dataNascimento) {
     return `${idade} anos`;
 }
 
-function inicializarResultado() {
+async function inicializarResultado() {
     if (!verificarAutenticacao()) return;
 
     // Configurar cabeçalho/menu lateral
@@ -110,6 +110,20 @@ function inicializarResultado() {
 
     const today = new Date();
     document.getElementById('evaluationDate').textContent = today.toLocaleDateString('pt-BR') + ' ' + today.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+    // Preenche o template invisível do PDF com fallback de localStorage inicial
+    preencherLaudoPDF();
+
+    // Faz busca real no banco de dados do MySQL para obter CPF e Responsável para o laudo
+    try {
+        const resposta = await fetch(`http://localhost:3000/api/pacientes/${dadosTriagem.id_paciente}`);
+        const dados = await resposta.json();
+        if (dados.sucesso && dados.paciente) {
+            preencherLaudoPDF(dados.paciente);
+        }
+    } catch (err) {
+        console.warn("Não foi possível carregar dados completos do paciente do MySQL para o PDF:", err);
+    }
 }
 
 /**
@@ -120,91 +134,140 @@ function inicializarResultado() {
 async function saveEvaluation() {
     if (!dadosTriagem) return;
 
+    // Recupera o ID do profissional logado
+    let userId = localStorage.getItem('userId');
+    if (!userId) {
+        console.warn("userId não encontrado no localStorage. Usando id_usuario = 1 como fallback temporário.");
+        userId = "1";
+    }
+
     // Conversão de escala do score para bater com INT no SQL v2 (escala 0-100)
     const scoreConvertido = Math.round(dadosTriagem.scoreRaw * 100);
 
     // Chaves estruturadas em perfeita conformidade com as colunas do SQL v2
     const dadosRelatorioDB = {
-        usuario_id_relatorio: 1, // ID do profissional logado
+        usuario_id_relatorio: parseInt(userId),
         paciente_id_relatorio: dadosTriagem.id_paciente,
         score_relatorio: scoreConvertido,
         resultado_relatorio: dadosTriagem.recomendado ? 'RECOMENDADO' : 'NAO_RECOMENDADO',
-        observacoes_relatorio: dadosTriagem.recomendado ? "Encaminhamento para teste genético recomendado pelo sistema de triagem." : "Acompanhamento clínico padrão recomendado."
+        observacoes_relatorio: dadosTriagem.recomendado 
+            ? "Encaminhamento para teste genético recomendado pelo sistema de triagem." 
+            : "Acompanhamento clínico padrão recomendado."
     };
 
     try {
-        console.log("Simulando salvamento no Banco de Dados (SQL v2):", dadosRelatorioDB);
-        
-        // localStorage usado apenas como simulação temporária de persistência da API
-        const relatoriosSalvos = JSON.parse(localStorage.getItem('relatoriosSimulados') || '[]');
-        relatoriosSalvos.push({
-            id_relatorio: relatoriosSalvos.length + 1,
-            data_relatorio: new Date().toISOString(),
-            ...dadosRelatorioDB,
-            nome_paciente: dadosTriagem.nome_paciente // Apenas para exibição amigável
+        // Envia requisição real ao servidor backend
+        const resposta = await fetch('http://localhost:3000/api/relatorios', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dadosRelatorioDB)
         });
-        localStorage.setItem('relatoriosSimulados', JSON.stringify(relatoriosSalvos));
 
-        alert('Avaliação salva com sucesso no banco de dados simulado!');
-        
-        // Limpar dados temporários do localStorage
-        localStorage.removeItem('nome_paciente');
-        localStorage.removeItem('sexo_paciente');
-        localStorage.removeItem('data_nascimento_paciente');
-        localStorage.removeItem('score_relatorio');
-        localStorage.removeItem('id_paciente');
+        const dados = await resposta.json();
 
-        window.location.href = '../Principais/pacientes.html';
+        if (dados.sucesso) {
+            alert('Avaliação salva com sucesso no banco de dados real!');
+            
+            // Limpar somente dados temporários de trânsito da triagem do localStorage
+            localStorage.removeItem('nome_paciente');
+            localStorage.removeItem('sexo_paciente');
+            localStorage.removeItem('data_nascimento_paciente');
+            localStorage.removeItem('score_relatorio');
+            localStorage.removeItem('id_paciente');
+
+            // Redireciona de volta para a lista de pacientes
+            window.location.href = '../Principais/pacientes.html';
+        } else {
+            alert('Erro do servidor ao salvar avaliação: ' + dados.mensagem);
+        }
     } catch (error) {
-        console.error("Erro ao salvar avaliação:", error);
-        alert("Erro técnico ao salvar a triagem.");
+        console.error("Erro ao salvar avaliação via API:", error);
+        alert("Erro técnico ao salvar a triagem no MySQL. Certifique-se de que o backend está online.");
     }
 }
 
 function printResult() {
-    // 1. Abre a tela de print nativa
-    window.print();
-
-    // 2. Gera download imediato do laudo clínico em PDF/TXT formatado no Chrome
     if (!dadosTriagem) return;
+
+    // 1. Torna o bloco do laudo temporariamente visível para o html2pdf capturar
+    const element = document.getElementById('laudoClinicoPDF');
+    if (!element) {
+        alert("Erro técnico: O contêiner do laudo PDF não foi encontrado.");
+        return;
+    }
+
+    element.style.display = 'block';
+
+    // 2. Configurações premium do arquivo PDF gerado
+    const options = {
+        margin: [0.4, 0.4, 0.4, 0.4], // Margem de 0.4 polegadas para visual profissional
+        filename: `laudo-triagem-${dadosTriagem.nome_paciente.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2.5, useCORS: true, letterRendering: true }, // Escala maior para nitidez excelente
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    // 3. Executa a conversão e o download do PDF
+    html2pdf().set(options).from(element).save().then(() => {
+        // Oculta novamente o elemento após o processo de download
+        element.style.display = 'none';
+    }).catch(err => {
+        console.error("Erro na geração do PDF via html2pdf:", err);
+        alert("Ocorreu um erro técnico ao gerar o laudo em PDF.");
+        element.style.display = 'none';
+    });
+}
+
+// Preenche dinamicamente o template do laudo de impressão com dados consolidados
+function preencherLaudoPDF(paciente = {}) {
+    if (!dadosTriagem) return;
+
+    const today = new Date();
+    const dataFormatada = today.toLocaleDateString('pt-BR') + ' às ' + today.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const userDisplayName = localStorage.getItem('userDisplayName') || 'Profissional';
+    const userDisplayNameFormated = userDisplayName.charAt(0).toUpperCase() + userDisplayName.slice(1);
+
+    document.getElementById('pdfPatientName').textContent = dadosTriagem.nome_paciente || 'Não informado';
+    document.getElementById('pdfPatientCPF').textContent = paciente.cpf || 'Não informado';
+    document.getElementById('pdfPatientSex').textContent = dadosTriagem.sexo_paciente === 'M' ? 'Masculino' : 'Feminino';
     
-    const displayUser = localStorage.getItem('userDisplayName') || 'Profissional';
+    const dataNascStr = dadosTriagem.data_nascimento_paciente;
+    const dataNascFormated = dataNascStr 
+        ? new Date(dataNascStr).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) 
+        : '';
+    const idadeStr = calcularIdade(dadosTriagem.data_nascimento_paciente);
+    document.getElementById('pdfPatientAge').textContent = dataNascFormated ? `${dataNascFormated} (${idadeStr})` : idadeStr;
     
-    const clinicalTextContent = `======================================================================
-                        LAUDO CLÍNICO DE TRIAGEM
-                     SISTEMA DE TRIAGEM X-FRÁGIL
-======================================================================
+    document.getElementById('pdfPatientGuardian').textContent = paciente.nome_responsavel || 'Não informado';
 
-[DADOS DO PACIENTE]
-Nome Completo: ${dadosTriagem.nome_paciente}
-Identificação ID: ${dadosTriagem.id_paciente}
-Sexo Biológico: ${dadosTriagem.sexo_paciente === 'M' ? 'Masculino (M)' : 'Feminino (F)'}
-Data de Nascimento: ${dadosTriagem.data_nascimento_paciente}
-Idade Calculada: ${calcularIdade(dadosTriagem.data_nascimento_paciente)}
+    document.getElementById('pdfScoreValue').textContent = dadosTriagem.scoreRaw.toFixed(2);
+    document.getElementById('pdfThresholdValue').textContent = dadosTriagem.limiar.toFixed(2);
 
-[ANÁLISE DE SCORE CLÍNICO]
-Score de Triagem Obtido: ${dadosTriagem.scoreRaw.toFixed(2)}
-Limiar de Corte para o Sexo: ${dadosTriagem.limiar.toFixed(2)}
-Status de Recomendação: ${dadosTriagem.recomendado ? 'RECOMENDADO' : 'NAO_RECOMENDADO'}
+    const recBox = document.getElementById('pdfRecommendationBox');
+    const recIcon = document.getElementById('pdfRecIcon');
+    const recBadge = document.getElementById('pdfRecBadge');
+    const recText = document.getElementById('pdfRecText');
 
-[VEREDITO E RECOMENDAÇÕES]
-${dadosTriagem.recomendado 
-    ? 'ATENÇÃO: O score clínico do paciente atinge ou supera o limiar biológico estabelecido para a síndrome do X-Frágil.\nRecomenda-se formalmente o encaminhamento do paciente a um geneticista e a realização do teste genético molecular (PCR/Southern Blot).' 
-    : 'Acompanhamento de rotina padrão. O score clínico obtido situa-se na faixa de normalidade biológica estabelecida para o sexo do paciente.'}
+    if (dadosTriagem.recomendado) {
+        recBox.style.backgroundColor = '#fee2e2';
+        recBox.style.borderColor = '#ef4444';
+        recBox.style.color = '#991b1b';
+        recIcon.textContent = '⚠️';
+        recBadge.textContent = 'Encaminhamento Recomendado';
+        recText.innerHTML = `O score obtido (<strong>${dadosTriagem.scoreRaw.toFixed(2)}</strong>) atingiu ou superou o limiar de corte estabelecido para o sexo biológico do paciente (<strong>${dadosTriagem.limiar.toFixed(2)}</strong>).<br><strong style="display: block; margin-top: 10px;">Recomendação Clínica:</strong> Indica-se encaminhamento formal para consulta com médico geneticista e realização de teste genético molecular (análise de expansão de trinucleotídeos CGG no gene FMR1 via PCR e/ou Southern Blot) para confirmação de diagnóstico para a Síndrome do X-Frágil.`;
+    } else {
+        recBox.style.backgroundColor = '#d1fae5';
+        recBox.style.borderColor = '#10b981';
+        recBox.style.color = '#065f46';
+        recIcon.textContent = '✅';
+        recBadge.textContent = 'Acompanhamento de Rotina';
+        recText.innerHTML = `O score obtido (<strong>${dadosTriagem.scoreRaw.toFixed(2)}</strong>) encontra-se abaixo do limiar de corte de referência para o sexo biológico do paciente (<strong>${dadosTriagem.limiar.toFixed(2)}</strong>).<br><strong style="display: block; margin-top: 10px;">Recomendação Clínica:</strong> O paciente apresenta desenvolvimento clínico-comportamental dentro da faixa esperada em relação aos critérios triados. Recomenda-se manter o acompanhamento pediátrico e de desenvolvimento escolar de rotina habitual.`;
+    }
 
-======================================================================
-Data e Hora de Emissão: ${new Date().toLocaleString('pt-BR')}
-Profissional Responsável: ${displayUser}
-Assinatura Digitalizada do Sistema STC-MVP
-======================================================================`;
-
-    const blob = new Blob([clinicalTextContent], { type: 'text/plain;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `laudo_triagem_${dadosTriagem.nome_paciente.replace(/\s+/g, '_')}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    document.getElementById('pdfEvaluationDate').textContent = dataFormatada;
+    document.getElementById('pdfProfessionalName').textContent = `Dr(a). ${userDisplayNameFormated}`;
 }
 
 function navigate(page) {

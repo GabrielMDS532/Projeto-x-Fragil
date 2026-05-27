@@ -22,32 +22,10 @@ function verificarAcessoAdmin() {
 
 /**
  * =========================================================================
- * 2. CONFIGURAÇÕES E DADOS TEMPORÁRIOS DE SIMULAÇÃO (PRONTO PARA API)
+ * 2. INICIALIZAÇÃO DA PÁGINA E CARREGAMENTO REAL DA API
  * =========================================================================
  */
 let listaUsuarios = [];
-
-// Dados temporários iniciais (apenas se o localStorage simulador de banco estiver vazio)
-const USUARIOS_TEMPORARIOS_INICIAIS = [
-    {
-        id_usuario: 1,
-        nome_usuario: "Carlos",
-        sobrenome_usuario: "Silva",
-        email: "admin@clinica.com",
-        senha: "admin123",
-        tipo_usuario: "ADMIN",
-        data_criacao: new Date().toISOString()
-    },
-    {
-        id_usuario: 2,
-        nome_usuario: "Ana",
-        sobrenome_usuario: "Santos",
-        email: "ana@clinica.com",
-        senha: "user123",
-        tipo_usuario: "USUARIO",
-        data_criacao: new Date().toISOString()
-    }
-];
 
 function inicializarUsuarios() {
     if (!verificarAcessoAdmin()) return;
@@ -61,17 +39,33 @@ function inicializarUsuarios() {
     const userInfoElement = document.getElementById('userInfo');
     if (userInfoElement) userInfoElement.textContent = `👤 ${userDisplayNameFormated}`;
 
-    // Inicializar lista de usuários a partir da simulação do localStorage
-    const dadosSalvos = localStorage.getItem('usuariosSimulados');
-    if (dadosSalvos) {
-        listaUsuarios = JSON.parse(dadosSalvos);
-    } else {
-        // Inicialização inicial com dados temporários
-        listaUsuarios = [...USUARIOS_TEMPORARIOS_INICIAIS];
-        localStorage.setItem('usuariosSimulados', JSON.stringify(listaUsuarios));
-    }
+    // Carregar profissionais da clínica diretamente da API real
+    carregarUsuarios();
+}
 
-    renderizarTabelaUsuarios();
+async function carregarUsuarios() {
+    try {
+        const resposta = await fetch('http://localhost:3000/api/usuarios');
+        const dados = await resposta.json();
+
+        if (dados.sucesso) {
+            listaUsuarios = dados.usuarios;
+            renderizarTabelaUsuarios();
+        } else {
+            console.error("Erro do servidor ao buscar profissionais:", dados.mensagem);
+            mostrarMensagemErroTabela("Erro ao carregar lista de profissionais.");
+        }
+    } catch (error) {
+        console.error("Erro ao buscar profissionais no backend:", error);
+        mostrarMensagemErroTabela("Erro de conexão. Verifique se o Node.js está online.");
+    }
+}
+
+function mostrarMensagemErroTabela(msg) {
+    const tableBody = document.getElementById('usersTableBody');
+    if (tableBody) {
+        tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: red; padding: 15px;">${msg}</td></tr>`;
+    }
 }
 
 /**
@@ -86,7 +80,7 @@ function renderizarTabelaUsuarios() {
     tableBody.innerHTML = '';
 
     if (listaUsuarios.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: #64748b;">Nenhum usuário cadastrado.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: #64748b; padding: 15px;">Nenhum usuário cadastrado.</td></tr>`;
         return;
     }
 
@@ -113,7 +107,7 @@ function renderizarTabelaUsuarios() {
 
 /**
  * =========================================================================
- * 4. CADASTRO DE NOVO USUÁRIO (SQL V2 COMPATÍVEL)
+ * 4. CADASTRO DE NOVO USUÁRIO (INTEGRADO COM A API BACKEND)
  * =========================================================================
  */
 function toggleForm() {
@@ -139,37 +133,45 @@ async function saveUser(event) {
         return;
     }
 
-    // Chaves estruturadas em perfeita conformidade com a tabela 'usuario' do SQL v2
-    const novoUsuarioDB = {
-        id_usuario: listaUsuarios.length > 0 ? Math.max(...listaUsuarios.map(u => u.id_usuario)) + 1 : 1,
+    // Estrutura enviada na requisição real
+    const novoUsuario = {
         nome_usuario: inputNome.value.trim(),
         sobrenome_usuario: inputSobrenome.value.trim(),
         email: inputEmail.value.trim(),
-        senha: inputSenha.value, // em produção estaria encriptado
-        tipo_usuario: selectTipo.value, // ENUM 'USUARIO' ou 'ADMIN'
-        data_criacao: new Date().toISOString()
+        senha: inputSenha.value,
+        tipo_usuario: selectTipo.value // 'USUARIO' ou 'ADMIN'
     };
 
     try {
-        console.log("Simulando persistência de Usuário no Banco (SQL v2):", novoUsuarioDB);
+        const resposta = await fetch('http://localhost:3000/api/usuarios', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(novoUsuario)
+        });
 
-        listaUsuarios.push(novoUsuarioDB);
-        localStorage.setItem('usuariosSimulados', JSON.stringify(listaUsuarios));
+        const dados = await resposta.json();
 
-        alert('Usuário cadastrado com sucesso!');
-        document.getElementById('newUserForm').reset();
-        toggleForm();
-        renderizarTabelaUsuarios();
+        if (dados.sucesso) {
+            alert('Profissional cadastrado com sucesso no banco de dados!');
+            document.getElementById('newUserForm').reset();
+            toggleForm();
+            // Recarrega lista
+            carregarUsuarios();
+        } else {
+            alert('Erro ao cadastrar profissional: ' + dados.mensagem);
+        }
 
     } catch (error) {
         console.error("Erro técnico ao salvar usuário:", error);
-        alert("Erro técnico ao salvar o usuário.");
+        alert("Erro técnico ao tentar cadastrar o profissional. Verifique se o Node.js está rodando.");
     }
 }
 
 /**
  * =========================================================================
- * 5. REMOÇÃO DE USUÁRIO
+ * 5. REMOÇÃO DE USUÁRIO (CONECTADO À API)
  * =========================================================================
  */
 async function removerUsuario(id) {
@@ -178,17 +180,25 @@ async function removerUsuario(id) {
         return;
     }
 
-    if (!confirm('Tem certeza de que deseja remover este usuário?')) return;
+    if (!confirm('Tem certeza de que deseja remover este profissional do sistema?')) return;
 
     try {
-        console.log(`Simulando exclusão do ID: ${id} no Banco de Dados`);
-        
-        listaUsuarios = listaUsuarios.filter(usr => usr.id_usuario !== id);
-        localStorage.setItem('usuariosSimulados', JSON.stringify(listaUsuarios));
-        
-        renderizarTabelaUsuarios();
+        const resposta = await fetch(`http://localhost:3000/api/usuarios/${id}`, {
+            method: 'DELETE'
+        });
+
+        const dados = await resposta.json();
+
+        if (dados.sucesso) {
+            alert('Profissional removido com sucesso!');
+            // Recarrega lista
+            carregarUsuarios();
+        } else {
+            alert('Erro ao excluir profissional: ' + dados.mensagem);
+        }
     } catch (error) {
         console.error("Erro ao excluir usuário:", error);
+        alert("Erro técnico ao tentar remover o profissional.");
     }
 }
 

@@ -75,7 +75,7 @@
                         </select>
                     </div>
                 </div>
-                <button class="btn-primary mt-20">🔍 Filtrar</button>
+                <button id="btnFiltrar" class="btn-primary mt-20">🔍 Filtrar</button>
             </div>
 
             <!-- Tabela de Resultados -->
@@ -90,42 +90,8 @@
                             <th>Resultado</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>08/05/2026</td>
-                            <td>João Silva</td>
-                            <td>Dr. Carlos</td>
-                            <td><strong>0.72</strong></td>
-                            <td><span class="badge badge-danger">Encaminhamento</span></td>
-                        </tr>
-                        <tr>
-                            <td>07/05/2026</td>
-                            <td>Maria Santos</td>
-                            <td>Dra. Ana</td>
-                            <td><strong>0.45</strong></td>
-                            <td><span class="badge badge-success">Normal</span></td>
-                        </tr>
-                        <tr>
-                            <td>07/05/2026</td>
-                            <td>Pedro Costa</td>
-                            <td>Dr. Carlos</td>
-                            <td><strong>0.68</strong></td>
-                            <td><span class="badge badge-danger">Encaminhamento</span></td>
-                        </tr>
-                        <tr>
-                            <td>06/05/2026</td>
-                            <td>Ana Oliveira</td>
-                            <td>Dra. Ana</td>
-                            <td><strong>0.38</strong></td>
-                            <td><span class="badge badge-success">Normal</span></td>
-                        </tr>
-                        <tr>
-                            <td>05/05/2026</td>
-                            <td>Lucas Ferreira</td>
-                            <td>Dr. Carlos</td>
-                            <td><strong>0.61</strong></td>
-                            <td><span class="badge badge-danger">Encaminhamento</span></td>
-                        </tr>
+                    <tbody id="reportsTableBody">
+                        <!-- Renderizado dinamicamente pelo JavaScript -->
                     </tbody>
                 </table>
             </div>
@@ -133,6 +99,70 @@
         </div>
     </div>
 
+    <!-- Biblioteca html2pdf.js via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="../../js/relatorios.js"></script>
+
+    <!-- Contêiner do Relatório Consolidado Oculto na tela, usado apenas para geração do PDF -->
+    <div id="relatorioConsolidadoPDF" style="display: none; font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #1e293b; background-color: #ffffff; max-width: 800px; margin: 0 auto; line-height: 1.5;">
+        <!-- Cabeçalho Timbrado -->
+        <div style="border-bottom: 3px solid #8b5cf6; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 style="font-size: 22px; color: #5b21b6; margin: 0; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Centro de Diagnóstico e Triagem Clínica</h1>
+                <p style="font-size: 12px; color: #64748b; margin: 5px 0 0 0;">Relatório Consolidado de Triagens Clínicas da Síndrome do X-Frágil</p>
+            </div>
+            <div style="text-align: right;">
+                <span style="background-color: #f5f3ff; color: #5b21b6; border: 1px solid #ddd6fe; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase;">Exportação Geral</span>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; font-size: 13px; color: #475569; margin-bottom: 30px; padding: 15px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <div>
+                <p style="margin: 0 0 5px 0;"><strong>Profissional Emissor:</strong> <span id="pdfRepProfessionalName">-</span></p>
+                <p style="margin: 0;"><strong>Data de Emissão:</strong> <span id="pdfRepEvaluationDate">-</span></p>
+            </div>
+            <div style="text-align: right;">
+                <p style="margin: 0 0 5px 0;"><strong>Registros Exportados:</strong> <span id="pdfRepTotalExames">0</span></p>
+                <p style="margin: 0;"><strong>Média Geral de Scores:</strong> <span id="pdfRepMediaScore">0.00</span></p>
+            </div>
+        </div>
+
+        <h2 style="font-size: 16px; color: #5b21b6; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 15px; font-weight: 600;">1. RESUMO ESTATÍSTICO DO PERÍODO</h2>
+        
+        <div style="display: flex; gap: 20px; margin-bottom: 35px;">
+            <div style="flex: 1; background-color: #fee2e2; border: 1px solid #fca5a5; border-radius: 8px; padding: 12px; text-align: center; color: #991b1b;">
+                <h4 style="margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; font-weight: 600; color: #b91c1c;">Encaminhamentos Recomendados</h4>
+                <div style="font-size: 26px; font-weight: 700;" id="pdfRepTotalRecomendados">0</div>
+                <div style="font-size: 11px; font-weight: 500; margin-top: 2px;" id="pdfRepPctRecomendados">0% do total</div>
+            </div>
+            <div style="flex: 1; background-color: #d1fae5; border: 1px solid #6ee7b7; border-radius: 8px; padding: 12px; text-align: center; color: #065f46;">
+                <h4 style="margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; font-weight: 600; color: #047857;">Acompanhamentos de Rotina</h4>
+                <div style="font-size: 26px; font-weight: 700;" id="pdfRepTotalNormais">0</div>
+                <div style="font-size: 11px; font-weight: 500; margin-top: 2px;" id="pdfRepPctNormais">0% do total</div>
+            </div>
+        </div>
+
+        <h2 style="font-size: 16px; color: #5b21b6; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 15px; font-weight: 600;">2. LISTAGEM DETALHADA DAS TRIAGENS</h2>
+        
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; margin-bottom: 40px;">
+            <thead>
+                <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
+                    <th style="padding: 10px; font-weight: 600; color: #475569; width: 22%;">Data</th>
+                    <th style="padding: 10px; font-weight: 600; color: #475569; width: 28%;">Paciente</th>
+                    <th style="padding: 10px; font-weight: 600; color: #475569; width: 28%;">Profissional</th>
+                    <th style="padding: 10px; font-weight: 600; color: #475569; width: 10%; text-align: center;">Score</th>
+                    <th style="padding: 10px; font-weight: 600; color: #475569; width: 12%; text-align: center;">Resultado</th>
+                </tr>
+            </thead>
+            <tbody id="pdfRepTableBody">
+                <!-- Preenchido dinamicamente pelo JS antes de gerar o PDF -->
+            </tbody>
+        </table>
+
+        <!-- Rodapé do PDF -->
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 40px; text-align: center; font-size: 10px; color: #94a3b8;">
+            Relatório de auditoria consolidado gerado eletronicamente em conformidade com as diretrizes de triagem STC-MVP. Chave de exportação auditada em banco de dados real MySQL.
+        </div>
+    </div>
 </body>
 </html>

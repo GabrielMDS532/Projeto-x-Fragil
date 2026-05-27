@@ -85,33 +85,35 @@ function inicializarNovaAvaliacao() {
  */
 async function buscarPacientesParaSelect() {
     try {
-        const dadosSalvos = localStorage.getItem('pacientesSimulados');
-        if (dadosSalvos) {
-            listaPacientes = JSON.parse(dadosSalvos);
+        // Faz a requisição real para o backend MySQL
+        const resposta = await fetch('http://localhost:3000/api/pacientes');
+        const dados = await resposta.json();
+
+        if (dados.sucesso) {
+            listaPacientes = dados.pacientes; // Agora guarda os pacientes reais do MySQL
+
+            const selectElement = document.getElementById('selectPatient');
+            if (!selectElement) return;
+
+            selectElement.innerHTML = '<option value="">Selecione um paciente...</option>';
+
+            listaPacientes.forEach(paciente => {
+                const option = document.createElement('option');
+                option.value = paciente.id_paciente;
+                option.textContent = paciente.nome_paciente;
+                selectElement.appendChild(option);
+            });
+
+            // Autoseleção baseada no query parameter 'id_paciente' se houver
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlPatientId = urlParams.get('id_paciente');
+            
+            if (urlPatientId) {
+                selectElement.value = urlPatientId;
+                carregarInformacoesPaciente();
+            }
         } else {
-            listaPacientes = [...PACIENTES_TEMPORARIOS_INICIAIS];
-            localStorage.setItem('pacientesSimulados', JSON.stringify(listaPacientes));
-        }
-        
-        const selectElement = document.getElementById('selectPatient');
-        if (!selectElement) return;
-
-        selectElement.innerHTML = '<option value="">Selecione um paciente...</option>';
-
-        listaPacientes.forEach(paciente => {
-            const option = document.createElement('option');
-            option.value = paciente.id_paciente;
-            option.textContent = paciente.nome_paciente;
-            selectElement.appendChild(option);
-        });
-
-        // Autoseleção baseada no query parameter 'id_paciente' se houver
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlPatientId = urlParams.get('id_paciente');
-        
-        if (urlPatientId) {
-            selectElement.value = urlPatientId;
-            carregarInformacoesPaciente();
+            console.error("Erro do servidor ao carregar select de pacientes:", dados.mensagem);
         }
 
     } catch (error) {

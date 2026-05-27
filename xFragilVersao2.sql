@@ -1,4 +1,4 @@
-CREATE DATABASE  IF NOT EXISTS `x_fragil` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+CREATE DATABASE  IF NOT EXISTS `x_fragil` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci  */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `x_fragil`;
 -- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
 --
@@ -36,7 +36,7 @@ CREATE TABLE `auditoria` (
   `ip_origem` varchar(45) DEFAULT NULL,
   `observacao` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id_auditoria`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -58,13 +58,14 @@ DROP TABLE IF EXISTS `paciente`;
 CREATE TABLE `paciente` (
   `id_paciente` int NOT NULL AUTO_INCREMENT,
   `nome_paciente` varchar(255) NOT NULL,
+  `cpf` varchar(14) UNIQUE,
   `sexo_paciente` enum('M','F') NOT NULL,
   `data_nascimento_paciente` date NOT NULL,
   `nome_responsavel` varchar(255) DEFAULT NULL,
   `telefone_paciente` varchar(20) NOT NULL,
   `observacoes_paciente` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id_paciente`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -96,7 +97,7 @@ CREATE TABLE `relatorio` (
   KEY `paciente_id_relatorio` (`paciente_id_relatorio`),
   CONSTRAINT `relatorio_ibfk_1` FOREIGN KEY (`usuario_id_relatorio`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE,
   CONSTRAINT `relatorio_ibfk_2` FOREIGN KEY (`paciente_id_relatorio`) REFERENCES `paciente` (`id_paciente`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -124,7 +125,7 @@ CREATE TABLE `usuario` (
   `tipo_usuario` enum('USUARIO','ADMIN') DEFAULT 'USUARIO',
   `data_criacao` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_usuario`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -150,7 +151,7 @@ CREATE TABLE `usuario_paciente` (
   KEY `paciente_id_cadastrado` (`paciente_id_cadastrado`),
   CONSTRAINT `usuario_paciente_ibfk_1` FOREIGN KEY (`usuario_id_cadastrado`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE,
   CONSTRAINT `usuario_paciente_ibfk_2` FOREIGN KEY (`paciente_id_cadastrado`) REFERENCES `paciente` (`id_paciente`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
