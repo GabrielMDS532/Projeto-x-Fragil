@@ -1,10 +1,19 @@
 import express from 'express';
 import mysql from 'mysql2';
 import cors from 'cors';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import nodemailer from 'nodemailer';
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+// Serve os arquivos HTML/CSS/JS do frontend via http://localhost:3000
+app.use(express.static('.'));
+
+// URL base do frontend usada nos links dos e-mails de recuperação.
+// Ajuste para a URL correta ao hospedar em produção.
+const FRONTEND_BASE_URL = 'http://localhost:3000';
 
 // Ligação com a base dados do MySQL
 const db = mysql.createConnection({
@@ -23,32 +32,93 @@ db.connect((err) => {
     console.log('Ligado à base de dados x_fragil com sucesso');
 });
 
-app.post('/api/login', (req, res) => {
+// --- Serviço de E-mail: Nodemailer + Ethereal (ambiente de desenvolvimento) ---
+// O Ethereal cria uma caixa de teste descartável na primeira chamada.
+// O link para visualizar o e-mail enviado aparece no console do servidor.
+let _emailTransporter = null;
+
+async function getEmailTransporter() {
+    if (_emailTransporter) return _emailTransporter;
+    const testAccount = await nodemailer.createTestAccount();
+    _emailTransporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
+        auth: { user: testAccount.user, pass: testAccount.pass }
+    });
+    console.log('\n📧 Ethereal Email pronto para testes!');
+    console.log('   Conta Ethereal:', testAccount.user);
+    console.log('   Acesse os e-mails em: https://ethereal.email\n');
+    return _emailTransporter;
+}
+
+// --- Rota de Login com Migração Suave para bcrypt ---
+// Se a senha no banco for texto puro e bater, permite login e migra para hash.
+// Se já for hash, usa bcrypt.compare. Se não bater, nega acesso.
+app.post('/api/login', async (req, res) => {
     const { email, senha } = req.body;
 
-    const sql = "SELECT * FROM usuario WHERE email = ? AND senha = ?";
+    // Busca pelo e-mail apenas; a verificação da senha ocorre no código, não no SQL
+    const sql = "SELECT * FROM usuario WHERE email = ?";
 
-    db.query(sql, [email, senha], (err, results) => {
+    db.query(sql, [email], async (err, results) => {
         if (err) {
             return res.status(500).json({ sucesso: false, mensagem: "Erro interno do servidor" });
         }
 
-        if (results.length > 0) {
-            const user = results[0];
-            // Login válido!
-            res.json({
-                sucesso: true,
-                usuario: {
-                    id_usuario: user.id_usuario,
-                    email: user.email,
-                    nome_usuario: user.nome_usuario,
-                    sobrenome_usuario: user.sobrenome_usuario,
-                    tipo_usuario: user.tipo_usuario
-                }
-            });
-        } else {
-            res.status(401).json({ sucesso: false, mensagem: "E-mail ou palavra-passe incorretos." });
+        if (results.length === 0) {
+            return res.status(401).json({ sucesso: false, mensagem: "E-mail ou palavra-passe incorretos." });
         }
+
+        const user = results[0];
+        const senhaDB = user.senha;
+
+        // Detecta se a senha no banco já é hash bcrypt ($2b$, $2a$, $2y$)
+        const jaEhHash = senhaDB.startsWith('$2');
+        let senhaValida = false;
+        let precisaHashear = false;
+
+        if (jaEhHash) {
+            // Senha já hasheada: comparação segura com bcrypt
+            senhaValida = await bcrypt.compare(senha, senhaDB);
+        } else {
+            // Senha ainda em texto puro: comparação direta
+            if (senhaDB === senha) {
+                senhaValida = true;
+                precisaHashear = true; // Será migrada para hash após o login
+            }
+        }
+
+        if (!senhaValida) {
+            return res.status(401).json({ sucesso: false, mensagem: "E-mail ou palavra-passe incorretos." });
+        }
+
+        // Login válido! Se a senha ainda era texto puro, migra para hash agora
+        if (precisaHashear) {
+            const novoHash = await bcrypt.hash(senha, 12);
+            db.query(
+                "UPDATE usuario SET senha = ? WHERE id_usuario = ?",
+                [novoHash, user.id_usuario],
+                (errUpdate) => {
+                    if (errUpdate) {
+                        console.error("Aviso: falha ao migrar hash da senha do usuário", user.id_usuario, errUpdate);
+                    } else {
+                        console.log(`🔒 Senha de ${user.email} migrada para bcrypt hash automaticamente.`);
+                    }
+                }
+            );
+        }
+
+        res.json({
+            sucesso: true,
+            usuario: {
+                id_usuario: user.id_usuario,
+                email: user.email,
+                nome_usuario: user.nome_usuario,
+                sobrenome_usuario: user.sobrenome_usuario,
+                tipo_usuario: user.tipo_usuario
+            }
+        });
     });
 });
 // Rota para cadastrar novo paciente
@@ -475,6 +545,189 @@ app.delete('/api/relatorios/:id', (req, res) => {
             mensagem: "Relatório excluído com sucesso!"
         });
     });
+});
+
+// ============================================================
+// ROTAS DE RECUPERAÇÃO E REDEFINIÇÃO DE SENHA
+// ============================================================
+
+// Solicita recuperação de senha
+// Responde SEMPRE com mensagem genérica para não revelar se o e-mail existe.
+app.post('/api/recuperar-senha', (req, res) => {
+    const { email } = req.body;
+    const MENSAGEM_GENERICA = "Se o e-mail estiver cadastrado, enviaremos as instruções.";
+
+    // Responde imediatamente com mensagem genérica (evita enumeração de e-mails por tempo)
+    res.json({ sucesso: true, mensagem: MENSAGEM_GENERICA });
+
+    if (!email || !email.includes('@')) return;
+
+    db.query(
+        "SELECT id_usuario, nome_usuario FROM usuario WHERE email = ?",
+        [email],
+        async (err, results) => {
+            if (err) { console.error("Erro ao buscar usuário para recuperação:", err); return; }
+            if (results.length === 0) return; // E-mail não cadastrado: ação silenciosa
+
+            const user = results[0];
+
+            // Token criptograficamente seguro de 32 bytes (64 caracteres hex)
+            const token = crypto.randomBytes(32).toString('hex');
+            const expiracao = new Date(Date.now() + 60 * 60 * 1000); // Expira em 1 hora
+            const expiracaoSQL = expiracao.toISOString().slice(0, 19).replace('T', ' ');
+
+            db.query(
+                "UPDATE usuario SET token_recuperacao = ?, token_expiracao = ? WHERE id_usuario = ?",
+                [token, expiracaoSQL, user.id_usuario],
+                async (errUpdate) => {
+                    if (errUpdate) { console.error("Erro ao salvar token de recuperação:", errUpdate); return; }
+
+                    const linkRedefinicao = `${FRONTEND_BASE_URL}/pages/cadastro/redefinir_senha.html?token=${token}`;
+                    console.log(`\n🔑 Token de recuperação gerado para: ${email}`);
+                    console.log(`🔗 Link de redefinição: ${linkRedefinicao}\n`);
+
+                    const htmlEmail = `
+<!DOCTYPE html>
+<html lang="pt-br">
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; background: #f8fafc; padding: 20px; margin: 0;">
+  <div style="max-width: 580px; margin: 0 auto;">
+    <div style="background: #1e293b; padding: 28px 30px; border-radius: 12px 12px 0 0; text-align: center;">
+      <h1 style="color: white; margin: 0; font-size: 20px; font-weight: 600;">🏥 Sistema de Triagem Clínica</h1>
+    </div>
+    <div style="background: white; padding: 36px 30px; border: 1px solid #e2e8f0; border-top: none;">
+      <h2 style="color: #1e293b; margin-top: 0;">Redefinição de Senha</h2>
+      <p style="color: #475569;">Olá, <strong>${user.nome_usuario}</strong>!</p>
+      <p style="color: #475569;">Recebemos uma solicitação para redefinir a senha da sua conta no Sistema de Triagem Clínica.</p>
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="${linkRedefinicao}"
+           style="background: #2563eb; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 16px; display: inline-block;">
+          Redefinir Minha Senha
+        </a>
+      </div>
+      <p style="color: #64748b; font-size: 14px;">⏰ Este link expira em <strong>1 hora</strong>.</p>
+      <p style="color: #64748b; font-size: 14px;">Se você não solicitou esta redefinição, pode ignorar este e-mail com segurança.</p>
+      <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+      <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+        Ou copie este link no navegador:<br>
+        <span style="color: #2563eb; word-break: break-all;">${linkRedefinicao}</span>
+      </p>
+    </div>
+    <div style="background: #f1f5f9; padding: 14px; text-align: center; border-radius: 0 0 12px 12px;">
+      <p style="color: #94a3b8; font-size: 12px; margin: 0;">Sistema de Triagem Clínica — X-Frágil &nbsp;|&nbsp; E-mail automático, não responda.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+                    try {
+                        const transporter = await getEmailTransporter();
+                        const info = await transporter.sendMail({
+                            from: '"Sistema de Triagem Clínica" <noreply@triagem.com>',
+                            to: email,
+                            subject: 'Recuperação de Senha — Sistema de Triagem Clínica',
+                            html: htmlEmail
+                        });
+                        console.log('✅ E-mail de recuperação enviado!');
+                        console.log('📧 Visualize o e-mail aqui:', nodemailer.getTestMessageUrl(info));
+                    } catch (errEmail) {
+                        console.error("Erro ao enviar e-mail de recuperação:", errEmail);
+                    }
+                }
+            );
+        }
+    );
+});
+
+// Valida se o token de redefinição ainda é válido (não expirou e existe no banco)
+app.get('/api/validar-token', (req, res) => {
+    const { token } = req.query;
+
+    if (!token) {
+        return res.status(400).json({ valido: false, mensagem: "Token não informado." });
+    }
+
+    // Consulta preparada: busca o token e verifica expiração no banco
+    db.query(
+        "SELECT id_usuario FROM usuario WHERE token_recuperacao = ? AND token_expiracao > NOW()",
+        [token],
+        (err, results) => {
+            if (err) {
+                console.error("Erro ao validar token:", err);
+                return res.status(500).json({ valido: false, mensagem: "Erro ao validar o link." });
+            }
+            if (results.length === 0) {
+                return res.json({ valido: false, mensagem: "Link inválido ou expirado. Solicite uma nova recuperação." });
+            }
+            res.json({ valido: true });
+        }
+    );
+});
+
+// Conclui a redefinição de senha usando o token
+app.post('/api/redefinir-senha', async (req, res) => {
+    const { token, senha } = req.body;
+
+    if (!token || !senha || senha.length < 6) {
+        return res.status(400).json({
+            sucesso: false,
+            mensagem: "Token e senha (mínimo 6 caracteres) são obrigatórios."
+        });
+    }
+
+    // Busca o usuário pelo token ainda válido (consulta preparada)
+    db.query(
+        "SELECT id_usuario FROM usuario WHERE token_recuperacao = ? AND token_expiracao > NOW()",
+        [token],
+        async (err, results) => {
+            if (err) {
+                console.error("Erro ao buscar token para redefinição:", err);
+                return res.status(500).json({ sucesso: false, mensagem: "Erro interno do servidor." });
+            }
+            if (results.length === 0) {
+                return res.status(400).json({
+                    sucesso: false,
+                    mensagem: "Link inválido ou expirado. Solicite uma nova recuperação de senha."
+                });
+            }
+
+            const { id_usuario } = results[0];
+
+            try {
+                // Gera o hash da nova senha com custo 12
+                const novoHash = await bcrypt.hash(senha, 12);
+
+                // Atualiza a senha e invalida o token atomicamente em uma única query.
+                // A condição 'AND token_recuperacao = ?' previne race condition:
+                // se o token for consumido entre o SELECT e este UPDATE, affectedRows será 0.
+                db.query(
+                    "UPDATE usuario SET senha = ?, token_recuperacao = NULL, token_expiracao = NULL WHERE id_usuario = ? AND token_recuperacao = ?",
+                    [novoHash, id_usuario, token],
+                    (errUpdate, resultado) => {
+                        if (errUpdate) {
+                            console.error("Erro ao atualizar senha:", errUpdate);
+                            return res.status(500).json({ sucesso: false, mensagem: "Erro ao atualizar a senha." });
+                        }
+                        if (resultado.affectedRows === 0) {
+                            // Token foi consumido entre o SELECT e o UPDATE (race condition)
+                            return res.status(400).json({
+                                sucesso: false,
+                                mensagem: "Link inválido ou expirado. Solicite uma nova recuperação de senha."
+                            });
+                        }
+                        console.log(`✅ Senha do usuário ID ${id_usuario} redefinida com sucesso via token.`);
+                        res.json({
+                            sucesso: true,
+                            mensagem: "Senha redefinida com sucesso! Você já pode fazer login com a nova senha."
+                        });
+                    }
+                );
+            } catch (errHash) {
+                console.error("Erro ao gerar hash da senha:", errHash);
+                return res.status(500).json({ sucesso: false, mensagem: "Erro interno ao processar a senha." });
+            }
+        }
+    );
 });
 
 //servidor iniciado na porta 3000

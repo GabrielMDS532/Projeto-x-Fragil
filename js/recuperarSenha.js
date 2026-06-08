@@ -1,31 +1,50 @@
-const formRecuperar = document.querySelector('#form_recuperar'); /* Pega o seletor para o formulário de envio do email */
-const inputEmail = document.querySelector('input[type="email"]'); /* Seleciona a caixa de input com o tipo email */
-const emailError = document.querySelector('#emailError'); /* Seleciona a caixa de teste de erro */
-const login_footer = document.querySelector('#link_enviado'); /* Seleciona o bloco que envia a mensagem */
-formRecuperar.addEventListener('submit', recuperaLogin);
+// Conecta o formulário de recuperação de senha à API do backend.
+// A função recoverPassword é chamada pelo onsubmit do formulário em recuperar_senha.html.
 
-function recuperaLogin(event) {
+async function recoverPassword(event) {
     event.preventDefault();
 
-    if (inputEmail.value.trim() === '' || !inputEmail.value.includes('@')) {
-        emailError.style.display = 'block'; /* Exibe a mensagem de erro */
-        
-    } else {
-        emailError.style.display ='none';
+    const inputEmail  = document.querySelector('#email');
+    const emailError  = document.querySelector('#emailError');
+    const btn         = document.querySelector('.btn_Recover_password');
+    const loginFooter = document.querySelector('#link_enviado');
 
-        /* Mostra a notificação de sucesso */
-        login_footer.classList.add('mostrar');
+    const email = inputEmail.value.trim();
 
-        /* Limpa o campo, mostra que o dado já foi enviado  */
-        inputEmail.value ='';
-
-
-        /* Faz a notificação sumir após 4s */
-        setTimeout(function() {
-            login_footer.classList.remove('mostrar');
-        } , 5000);
-    
+    // Validação básica no cliente
+    if (!email || !email.includes('@')) {
+        emailError.style.display = 'block';
+        return;
     }
+    emailError.style.display = 'none';
 
+    // Feedback de carregamento
+    btn.disabled    = true;
+    btn.textContent = 'Enviando...';
 
+    try {
+        const resposta = await fetch('http://localhost:3000/api/recuperar-senha', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+
+        await resposta.json();
+
+        // Limpa o campo e exibe a confirmação genérica (nunca revela se o e-mail existe)
+        inputEmail.value = '';
+        loginFooter.classList.add('mostrar');
+
+        setTimeout(() => {
+            loginFooter.classList.remove('mostrar');
+        }, 6000);
+
+    } catch (erro) {
+        console.error('Erro ao contactar o servidor:', erro);
+        emailError.style.display = 'block';
+        emailError.textContent   = 'Erro ao conectar com o servidor. Verifique se o Node.js está rodando na porta 3000.';
+    } finally {
+        btn.disabled    = false;
+        btn.textContent = 'Enviar Link de Recuperação';
+    }
 }

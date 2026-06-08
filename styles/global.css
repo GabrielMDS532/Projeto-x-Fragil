@@ -756,3 +756,65 @@ tbody tr:hover {
         grid-template-columns: 1fr;
     }
 }
+
+/* ============================================================
+   Redefinir Senha — estilos específicos da nova tela
+   ============================================================ */
+
+/* Input de senha (nova senha / confirmar senha) */
+.reset_input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    font-size: 16px;
+    box-sizing: border-box;
+    margin-bottom: 4px;
+}
+
+.reset_input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+/* Indicador de força da senha */
+.forca_container {
+    margin: 6px 0 8px;
+}
+
+.forca_barra {
+    height: 5px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.forca_fill {
+    height: 100%;
+    width: 0;
+    border-radius: 3px;
+    transition: width 0.35s ease, background-color 0.35s ease;
+}
+
+.forca_fraca { background: #ef4444; }
+.forca_media { background: #f59e0b; }
+.forca_forte { background: #10b981; }
+
+.forca_texto {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 3px;
+    text-align: right;
+}
+
+/* Mensagem de erro inline (por campo) */
+.campo_erro {
+    display: none;
+    color: #ef4444;
+    font-size: 13px;
+    margin-top: 3px;
+    font-weight: 400;
+}
