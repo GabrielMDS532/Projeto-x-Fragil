@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/estilos/global.css">
+  <title>Novo paciente</title>
+</head>
+<body class="layout_painel">
+  <div id="menu_lateral"></div>
+  <main class="area_principal">
+    <div class="cabecalho_pagina">
+      <h1>Adicionar novo paciente</h1>
+    </div>
+
+    <p id="erro_formulario" class="mensagem_erro" hidden></p>
+
+    <section class="cartao">
+      <form id="formulario_paciente" class="formulario">
+        <div class="grupo_campo">
+          <label for="nome">Nome</label>
+          <input type="text" id="nome" required>
+        </div>
+        <div class="grupo_campo">
+          <label for="idade">Idade</label>
+          <input type="number" id="idade" min="0" max="130" required>
+        </div>
+        <div class="grupo_campo">
+          <label for="sexo">Sexo</label>
+          <select id="sexo" required>
+            <option value="">Selecione</option>
+            <option value="M">Masculino</option>
+            <option value="F">Feminino</option>
+          </select>
+        </div>
+        <div class="grupo_campo">
+          <label for="telefone">Telefone</label>
+          <input type="tel" id="telefone">
+        </div>
+        <div class="grupo_campo">
+          <label for="responsavel">Responsável</label>
+          <input type="text" id="responsavel">
+        </div>
+        <div class="grupo_campo">
+          <label for="observacoes">Observações</label>
+          <textarea id="observacoes"></textarea>
+        </div>
+        <div class="linha_botoes">
+          <button type="submit" class="botao_primario">Salvar</button>
+          <button type="button" class="botao_secundario" id="botao_cancelar">Cancelar</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="/js/configuracao.js"></script>
+  <script src="/js/armazenamento.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/autenticacao.js"></script>
+  <script src="/js/utilidades.js"></script>
+  <script src="/js/menu.js"></script>
+  <script src="/js/paginas/novo_paciente.js"></script>
+</body>
+</html>

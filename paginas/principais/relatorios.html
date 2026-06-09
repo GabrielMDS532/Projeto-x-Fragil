@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/estilos/global.css">
+  <title>Relatórios</title>
+</head>
+<body class="layout_painel">
+  <div id="menu_lateral"></div>
+  <main class="area_principal">
+    <div class="cabecalho_pagina">
+      <h1>Relatórios</h1>
+      <button type="button" class="botao_secundario" id="botao_exportar">Exportar</button>
+    </div>
+
+    <p id="erro_relatorios" class="mensagem_erro" hidden></p>
+
+    <section class="cartao">
+      <div class="filtros">
+        <div class="grupo_campo">
+          <label for="data_inicio">Data início</label>
+          <input type="date" id="data_inicio">
+        </div>
+        <div class="grupo_campo">
+          <label for="data_fim">Data fim</label>
+          <input type="date" id="data_fim">
+        </div>
+        <div class="grupo_campo" id="grupo_filtro_usuario">
+          <label for="filtro_usuario">Usuário</label>
+          <select id="filtro_usuario">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="grupo_campo">
+          <label for="filtro_paciente">Paciente</label>
+          <select id="filtro_paciente">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="grupo_campo">
+          <label for="filtro_resultado">Resultado</label>
+          <select id="filtro_resultado">
+            <option value="">Todos</option>
+            <option value="ENCAMINHAR_TESTE_GENETICO">Encaminhar teste genético</option>
+            <option value="SEM_ENCAMINHAMENTO_IMEDIATO">Sem encaminhamento imediato</option>
+          </select>
+        </div>
+      </div>
+      <button type="button" class="botao_primario" id="botao_buscar">Buscar</button>
+    </section>
+
+    <section class="cartao">
+      <table class="tabela_dados">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Paciente</th>
+            <th>Avaliador</th>
+            <th>Score</th>
+            <th>Limiar</th>
+            <th>Resultado</th>
+          </tr>
+        </thead>
+        <tbody id="corpo_tabela_relatorios"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="/js/configuracao.js"></script>
+  <script src="/js/armazenamento.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/autenticacao.js"></script>
+  <script src="/js/utilidades.js"></script>
+  <script src="/js/menu.js"></script>
+  <script src="/js/paginas/relatorios.js"></script>
+</body>
+</html>

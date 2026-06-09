@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/estilos/global.css">
+  <title>Gerenciar pacientes</title>
+</head>
+<body class="layout_painel">
+  <div id="menu_lateral"></div>
+  <main class="area_principal">
+    <div class="cabecalho_pagina">
+      <h1>Gerenciar pacientes</h1>
+      <button type="button" class="botao_secundario" id="botao_voltar">Voltar</button>
+    </div>
+
+    <p id="erro_admin" class="mensagem_erro" hidden></p>
+
+    <section class="cartao">
+      <table class="tabela_dados">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Idade</th>
+            <th>Sexo</th>
+            <th>Telefone</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="corpo_tabela_admin"></tbody>
+      </table>
+    </section>
+
+    <section class="cartao">
+      <form id="formulario_edicao" class="formulario" hidden>
+        <h2>Editar paciente</h2>
+        <div class="grupo_campo">
+          <label for="editar_nome">Nome</label>
+          <input type="text" id="editar_nome" required>
+        </div>
+        <div class="grupo_campo">
+          <label for="editar_idade">Idade</label>
+          <input type="number" id="editar_idade" min="0" max="130" required>
+        </div>
+        <div class="grupo_campo">
+          <label for="editar_sexo">Sexo</label>
+          <select id="editar_sexo" required>
+            <option value="M">Masculino</option>
+            <option value="F">Feminino</option>
+          </select>
+        </div>
+        <div class="grupo_campo">
+          <label for="editar_telefone">Telefone</label>
+          <input type="tel" id="editar_telefone">
+        </div>
+        <div class="grupo_campo">
+          <label for="editar_responsavel">Responsável</label>
+          <input type="text" id="editar_responsavel">
+        </div>
+        <div class="grupo_campo">
+          <label for="editar_observacoes">Observações</label>
+          <textarea id="editar_observacoes"></textarea>
+        </div>
+        <div class="linha_botoes">
+          <button type="submit" class="botao_primario">Salvar alterações</button>
+          <button type="button" class="botao_secundario" id="botao_cancelar_edicao">Cancelar</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="/js/configuracao.js"></script>
+  <script src="/js/armazenamento.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/autenticacao.js"></script>
+  <script src="/js/utilidades.js"></script>
+  <script src="/js/menu.js"></script>
+  <script src="/js/paginas/pacientes_admin.js"></script>
+</body>
+</html>

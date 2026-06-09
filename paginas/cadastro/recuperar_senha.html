@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/estilos/global.css">
+  <title>Recuperar Senha</title>
+</head>
+<body class="layout_autenticacao">
+  <div class="container_recuperar">
+    <h1>Recuperar Senha</h1>
+    <form id="formulario_recuperar" class="formulario">
+      <div class="grupo_campo">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+      <button type="submit" class="botao_primario">Enviar solicitação</button>
+      <p id="aviso_recuperar" class="mensagem_aviso" hidden></p>
+      <p><a href="login.html">Voltar ao login</a></p>
+    </form>
+  </div>
+
+  <script src="/js/paginas/recuperar_senha.js"></script>
+</body>
+</html>

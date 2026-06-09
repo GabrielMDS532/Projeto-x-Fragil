@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/estilos/global.css">
+  <title>Painel</title>
+</head>
+<body class="layout_painel">
+  <div id="menu_lateral"></div>
+  <main class="area_principal">
+    <div class="cabecalho_pagina">
+      <h1 id="titulo_boas_vindas">Bem-vindo ao painel</h1>
+    </div>
+
+    <p id="erro_painel" class="mensagem_erro" hidden></p>
+
+    <section class="grid_estatisticas" aria-label="Estatísticas">
+      <article class="cartao_estatistica">
+        <div class="valor" id="total_pacientes">0</div>
+        <div class="rotulo">Total de pacientes</div>
+      </article>
+      <article class="cartao_estatistica">
+        <div class="valor" id="total_avaliacoes">0</div>
+        <div class="rotulo">Total de avaliações</div>
+      </article>
+      <article class="cartao_estatistica">
+        <div class="valor" id="total_encaminhamentos">0</div>
+        <div class="rotulo">Encaminhamentos</div>
+      </article>
+    </section>
+
+    <section class="cartao">
+      <h2>Acessos rápidos</h2>
+      <div class="grid_atalhos">
+        <button type="button" class="botao_atalho" id="atalho_novo_paciente">Cadastrar paciente</button>
+        <button type="button" class="botao_atalho" id="atalho_avaliacao">Nova avaliação</button>
+        <button type="button" class="botao_atalho" id="atalho_relatorios">Ver relatórios</button>
+        <button type="button" class="botao_atalho" id="atalho_usuarios">Gerenciar usuários</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="/js/configuracao.js"></script>
+  <script src="/js/armazenamento.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/autenticacao.js"></script>
+  <script src="/js/utilidades.js"></script>
+  <script src="/js/menu.js"></script>
+  <script src="/js/paginas/painel.js"></script>
+</body>
+</html>

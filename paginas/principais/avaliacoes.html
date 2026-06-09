@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/estilos/global.css">
+  <title>Avaliações</title>
+</head>
+<body class="layout_painel">
+  <div id="menu_lateral"></div>
+  <main class="area_principal">
+    <div class="cabecalho_pagina">
+      <h1>Nova avaliação</h1>
+      <button type="button" class="botao_secundario" id="botao_voltar">Voltar</button>
+    </div>
+
+    <p id="erro_avaliacoes" class="mensagem_erro" hidden></p>
+
+    <section class="cartao">
+      <form id="formulario_avaliacao">
+        <div class="grupo_campo">
+          <label for="select_paciente">Paciente</label>
+          <select id="select_paciente" required></select>
+        </div>
+
+        <div id="painel_paciente" class="painel_paciente" hidden>
+          <h2>Informações do paciente</h2>
+          <p>Nome: <span id="paciente_nome"></span></p>
+          <p>Idade: <span id="paciente_idade"></span></p>
+          <p>Sexo: <span id="paciente_sexo"></span></p>
+          <p>Observações: <span id="paciente_observacoes"></span></p>
+        </div>
+
+        <h2>Checklist de avaliação</h2>
+        <ul id="lista_sintomas" class="lista_sintomas"></ul>
+
+        <div class="linha_botoes">
+          <button type="submit" class="botao_primario">Finalizar avaliação</button>
+          <button type="button" class="botao_secundario" id="botao_limpar">Limpar formulário</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="/js/configuracao.js"></script>
+  <script src="/js/armazenamento.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/autenticacao.js"></script>
+  <script src="/js/sintomas.js"></script>
+  <script src="/js/utilidades.js"></script>
+  <script src="/js/menu.js"></script>
+  <script src="/js/paginas/avaliacoes.js"></script>
+</body>
+</html>

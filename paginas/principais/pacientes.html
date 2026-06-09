@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/estilos/global.css">
+  <title>Pacientes</title>
+</head>
+<body class="layout_painel">
+  <div id="menu_lateral"></div>
+  <main class="area_principal">
+    <div class="cabecalho_pagina">
+      <h1>Lista de pacientes</h1>
+      <button type="button" class="botao_primario" id="botao_novo_paciente">Adicionar paciente</button>
+    </div>
+
+    <p id="erro_pacientes" class="mensagem_erro" hidden></p>
+
+    <section class="cartao">
+      <table class="tabela_dados">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Idade</th>
+            <th>Sexo</th>
+            <th>Telefone</th>
+            <th>Cadastro</th>
+          </tr>
+        </thead>
+        <tbody id="corpo_tabela_pacientes"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="/js/configuracao.js"></script>
+  <script src="/js/armazenamento.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/autenticacao.js"></script>
+  <script src="/js/utilidades.js"></script>
+  <script src="/js/menu.js"></script>
+  <script src="/js/paginas/pacientes.js"></script>
+</body>
+</html>

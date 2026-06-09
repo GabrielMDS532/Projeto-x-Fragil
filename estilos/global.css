@@ -1,0 +1,386 @@
+:root {
+  --cor_fundo: #f5f5f5;
+  --cor_menu: #1e293b;
+  --cor_destaque: #2563eb;
+  --cor_destaque_escuro: #1d4ed8;
+  --cor_texto: #333333;
+  --cor_borda: #e2e8f0;
+  --cor_cartao: #ffffff;
+  --raio_cartao: 12px;
+  --sombra_cartao: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--cor_fundo);
+  color: var(--cor_texto);
+}
+
+.layout_painel {
+  display: flex;
+  min-height: 100vh;
+}
+
+.layout_autenticacao {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e9f2ff;
+}
+
+.menu_lateral {
+  width: 260px;
+  background: var(--cor_menu);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  z-index: 100;
+}
+
+.menu_titulo {
+  padding: 24px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.menu_titulo h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.menu_links {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 12px;
+  gap: 8px;
+  flex: 1;
+}
+
+.link_menu {
+  color: #ffffff;
+  text-decoration: none;
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.link_menu:hover,
+.link_menu_ativo {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.menu_rodape {
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.menu_perfil {
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.botao_sair {
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.botao_sair:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.area_principal {
+  margin-left: 260px;
+  flex: 1;
+  padding: 24px;
+  width: calc(100% - 260px);
+}
+
+.cartao {
+  background: var(--cor_cartao);
+  border-radius: var(--raio_cartao);
+  box-shadow: var(--sombra_cartao);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.cabecalho_pagina {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.cabecalho_pagina h1 {
+  font-size: 1.5rem;
+}
+
+.grid_estatisticas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.cartao_estatistica {
+  background: var(--cor_cartao);
+  border-radius: var(--raio_cartao);
+  box-shadow: var(--sombra_cartao);
+  padding: 20px;
+}
+
+.cartao_estatistica .valor {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--cor_destaque);
+}
+
+.cartao_estatistica .rotulo {
+  margin-top: 8px;
+  color: #64748b;
+}
+
+.grid_atalhos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.botao_atalho,
+.botao_primario,
+.botao_secundario {
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.botao_primario {
+  background: var(--cor_destaque);
+  color: #ffffff;
+}
+
+.botao_primario:hover {
+  background: var(--cor_destaque_escuro);
+}
+
+.botao_secundario {
+  background: #e2e8f0;
+  color: var(--cor_texto);
+}
+
+.botao_secundario:hover {
+  background: #cbd5e1;
+}
+
+.botao_atalho {
+  background: var(--cor_cartao);
+  border: 1px solid var(--cor_borda);
+  text-align: left;
+}
+
+.tabela_dados {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabela_dados th,
+.tabela_dados td {
+  padding: 12px;
+  border-bottom: 1px solid var(--cor_borda);
+  text-align: left;
+}
+
+.tabela_dados th {
+  background: #f8fafc;
+  font-weight: 600;
+}
+
+.formulario {
+  display: grid;
+  gap: 16px;
+  max-width: 640px;
+}
+
+.grupo_campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.grupo_campo label {
+  font-weight: 500;
+}
+
+.grupo_campo input,
+.grupo_campo select,
+.grupo_campo textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--cor_borda);
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.grupo_campo textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.linha_botoes {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filtros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.lista_sintomas {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.lista_sintomas label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.painel_paciente {
+  background: #f8fafc;
+  border: 1px solid var(--cor_borda);
+  border-radius: var(--raio_cartao);
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.resultado_triagem {
+  display: grid;
+  gap: 16px;
+}
+
+.resultado_destaque {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--cor_destaque);
+}
+
+.mensagem_erro {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.mensagem_aviso {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.container_login,
+.container_recuperar {
+  background: var(--cor_cartao);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 450px;
+}
+
+.container_login h1,
+.container_recuperar h1 {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.subtitulo_login {
+  text-align: center;
+  color: #666666;
+  margin-bottom: 24px;
+}
+
+.container_login a,
+.container_recuperar a {
+  color: var(--cor_destaque);
+  text-decoration: none;
+}
+
+.links_admin {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.links_admin a {
+  display: block;
+  padding: 14px 16px;
+  background: #f8fafc;
+  border: 1px solid var(--cor_borda);
+  border-radius: 8px;
+  color: var(--cor_texto);
+  text-decoration: none;
+}
+
+.links_admin a:hover {
+  border-color: var(--cor_destaque);
+}
+
+@media (max-width: 768px) {
+  .menu_lateral {
+    position: static;
+    width: 100%;
+    height: auto;
+  }
+
+  .layout_painel {
+    flex-direction: column;
+  }
+
+  .area_principal {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media print {
+  .menu_lateral,
+  .linha_botoes,
+  .botao_sair {
+    display: none;
+  }
+
+  .area_principal {
+    margin: 0;
+    width: 100%;
+    padding: 0;
+  }
+}

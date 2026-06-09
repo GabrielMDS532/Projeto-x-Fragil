@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/estilos/global.css">
+  <title>Cadastro de usuário</title>
+</head>
+<body class="layout_painel">
+  <div id="menu_lateral"></div>
+  <main class="area_principal">
+    <div class="cabecalho_pagina">
+      <h1>Cadastro de usuário</h1>
+      <button type="button" class="botao_secundario" id="botao_voltar">Voltar</button>
+    </div>
+
+    <p id="erro_usuario" class="mensagem_erro" hidden></p>
+
+    <section class="cartao">
+      <form id="formulario_usuario" class="formulario">
+        <div class="grupo_campo">
+          <label for="nome">Nome</label>
+          <input type="text" id="nome" required>
+        </div>
+        <div class="grupo_campo">
+          <label for="email">Email</label>
+          <input type="email" id="email" required>
+        </div>
+        <div class="grupo_campo">
+          <label for="perfil">Perfil</label>
+          <select id="perfil" required>
+            <option value="PADRAO">Padrão</option>
+            <option value="ADMIN">Administrador</option>
+          </select>
+        </div>
+        <div class="grupo_campo">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" minlength="8" required>
+        </div>
+        <div class="grupo_campo">
+          <label for="confirmar_senha">Confirmar senha</label>
+          <input type="password" id="confirmar_senha" minlength="8" required>
+        </div>
+        <button type="submit" class="botao_primario">Cadastrar</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="/js/configuracao.js"></script>
+  <script src="/js/armazenamento.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/autenticacao.js"></script>
+  <script src="/js/utilidades.js"></script>
+  <script src="/js/menu.js"></script>
+  <script src="/js/paginas/cadastro_usuario.js"></script>
+</body>
+</html>
