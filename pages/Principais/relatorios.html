@@ -35,7 +35,10 @@
             
             <div class="Mensagem_entrada">
                 <h4>Relatórios</h4>
-                <button class="btn-primary" onclick="exportReport()">📥 Exportar</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary" onclick="exportReport()">📥 Exportar PDF</button>
+                    <button class="btn-primary" onclick="exportarCSV()" id="btnExportarCSV" style="background-color: #059669; border-color: #059669;">📊 Exportar CSV</button>
+                </div>
             </div>
 
             <!-- Filtros -->

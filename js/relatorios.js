@@ -347,6 +347,58 @@ function exportReport() {
     exportarRelatorio();
 }
 
+function exportarCSV() {
+    if (!relatoriosFiltradosAtuais || relatoriosFiltradosAtuais.length === 0) {
+        alert('Nenhum relatório disponível para exportação com os filtros atuais.');
+        return;
+    }
+
+    // Cabeçalho do CSV
+    const cabecalho = ['Data', 'Paciente', 'Profissional', 'Score', 'Resultado', 'Observações'];
+    
+    // Mapear linhas
+    const linhas = relatoriosFiltradosAtuais.map(item => {
+        const dataOriginal = new Date(item.data_relatorio);
+        const dataFormatada = dataOriginal.toLocaleDateString('pt-BR', { timeZone: 'UTC' }) + ' ' + 
+                              dataOriginal.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+        const scoreFormatado = (item.score_relatorio / 100).toFixed(2);
+        const textoResultado = item.resultado_relatorio === 'RECOMENDADO' ? 'Encaminhamento' : 'Normal';
+        const nomeProfissional = item.nome_usuario 
+            ? `Dr(a). ${item.nome_usuario} ${item.sobrenome_usuario || ''}`
+            : 'Profissional';
+        const observacoes = item.observacoes_relatorio || '';
+
+        // Escapar aspas duplas no CSV e juntar por ponto e vírgula
+        return [
+            `"${dataFormatada.replace(/"/g, '""')}"`,
+            `"${item.nome_paciente.replace(/"/g, '""')}"`,
+            `"${nomeProfissional.replace(/"/g, '""')}"`,
+            `"${scoreFormatado.replace(/"/g, '""')}"`,
+            `"${textoResultado.replace(/"/g, '""')}"`,
+            `"${observacoes.replace(/"/g, '""')}"`
+        ].join(';');
+    });
+
+    // Conteúdo do CSV com BOM UTF-8 (\uFEFF)
+    const csvContent = '\uFEFF' + [cabecalho.join(';'), ...linhas].join('\n');
+
+    // Criação do link e download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    const today = new Date();
+    const dataArquivo = today.toISOString().split('T')[0];
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `relatorio-consolidado-triagens-${dataArquivo}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 // Rota de exclusão física de relatórios no MySQL (Restrita a administradores)
 async function deletarRelatorio(id) {
     if (!confirm('Deseja realmente remover este relatório? Esta ação apagará permanentemente o registro de triagem do banco de dados.')) return;
