@@ -107,17 +107,18 @@ container_login aplica estilização no blco onde tem o formulário para o login
 
 
 
-.container_login_recover{ /* Bloco da div que contém meu container pra recuperar a senha*/
-    background: rgb(234, 227, 227);
-    width: 400px;
-    height:500px;
-    padding:32px;
-    border-radius:32px;
-    box-shadow: 5px 20px 20px 8px rgba(0, 0, 0, 0.1);
+/* Card central das páginas de recuperação e redefinição de senha */
+.container_login_recover {
+    background: white;
+    width: 420px;
+    max-width: 92vw;
+    height: auto;
+    min-height: 460px;
+    padding: 40px 36px;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
     text-align: center;
-    justify-content: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Define quais propriedades vai animar e a duração da animação */
-
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 label {
@@ -127,19 +128,16 @@ label {
     font-size: 20px;
 }
 
-#email{ /* Estilização do campo de email da página de recuperar senha */
-    width:auto;
-    padding: 5px;
-    border-radius: 5px;
-    margin-bottom: 15px; 
+#email {
+    /* O campo de e-mail em recuperar_senha.html usa a classe .reset_input
+       para estilização principal. Este seletor apenas garante compatibilidade. */
+    width: 100%;
 }
 
-#emailError{
-    display: none; /* Estilização da mensagem de erro do campo de email */
-    color: red;
-    font-size: 14px;
-    margin-top: -10px;
-    margin-bottom: 10px;
+#emailError {
+    /* Usa a classe .campo_erro para estilização. Aqui apenas ajustamos a margem. */
+    margin-top: 3px;
+    margin-bottom: 0;
 }
 
 #senhaError{
@@ -152,57 +150,89 @@ label {
 
 
 .container_login_recover:hover {
-    transform: translateY(-5px); /* Move o card para cima */
-    box-shadow: 5px 25px 25px 10px rgba(0, 0, 0, 0.15); /* Aumenta a sombra para dar mais destaque */
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.11);
 }
 
-.header h2{ /* estilização do título de recuperar senha*/
+.header h2 {
     color: #1a202c;
-    margin-bottom: 10px;
-    font-size: 32px;
+    margin-bottom: 8px;
+    font-size: 26px;
+    font-weight: 600;
+}
+
+.icon_recover {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    margin-bottom: 18px;
+}
+
+.txt_descricao {
+    padding: 8px 4px 16px;
+    font-size: 15px;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+/* Botão principal das páginas de recuperação e redefinição de senha */
+.btn_Recover_password {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    margin: 16px 0 0;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.btn_Recover_password:hover:not(:disabled) {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+.btn_Recover_password:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Agrupamento de label + input nos formulários de recuperação */
+.recovery_field {
+    margin-bottom: 12px;
+    text-align: left;
+}
+
+.recovery_field label {
+    display: block;
+    margin-bottom: 6px;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    margin-top: 0;
+}
+
+/* Link de ação secundária (voltar ao login, solicitar novamente) */
+.txt_link_login {
+    margin-top: 18px;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.txt_link_login a {
+    color: #2563eb;
+    text-decoration: none;
     font-weight: 500;
 }
 
-.icon_recover{/* Estilização do icone de recuperar senha*/
-    width: 70px;
-    height: 70px;
-    object-fit: contain;
-    margin-bottom: 20px;
-
-}
-
-.txt_descricao{
-    padding: 20px;
-    font-size: 18px;
-}
-
-.btn_Recover_password{
-    margin: 15px;
-    padding: 2%;
-    border-color: black;
-    border-radius: 10px;
-}
-
-.login_footer{
-    position: fixed;
-    bottom: -100px; /* Começa escondida debaixo da tela*/
-    left: 50%;
-    transform: translateX(-50%); /* Centraliza na tela horizontalmente*/
-    color: rgb(14, 2, 2);
-    padding: 16px 24px;
-    border-radius: 8px;
-    font-size: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-    opacity: 0;
-    transition: bottom 0.4s ease, opacity 0.4s ease; /* Cria o efeito de subida suave*/
-
-}
-
-.login_footer.mostrar{
-    bottom: 40px;
-    opacity: 1;
-    border-color: black;
+.txt_link_login a:hover {
+    text-decoration: underline;
 }
 
 /* Layout com Menu Lateral */
