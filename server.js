@@ -4,12 +4,57 @@ import cors from 'cors';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 // Serve os arquivos HTML/CSS/JS do frontend via http://localhost:3000
 app.use(express.static('.'));
+// Serve a pasta de uploads estaticamente
+app.use('/uploads', express.static('./uploads'));
+
+// --- Configuração do Multer (Upload de Fotos) ---
+const uploadDir = './uploads';
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(file.originalname).toLowerCase();
+        cb(null, 'paciente-' + uniqueSuffix + ext);
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const mime = file.mimetype;
+    
+    const allowedExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
+    const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+
+    if (allowedExtensions.includes(ext) && allowedMimeTypes.includes(mime)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Formato de arquivo inválido. Apenas imagens PNG, JPG, JPEG e WEBP são permitidas.'));
+    }
+};
+
+const upload = multer({
+    storage: storage,
+    fileFilter: fileFilter,
+    limits: {
+        fileSize: 2 * 1024 * 1024 // 2MB
+    }
+});
+
 
 // URL base do frontend usada nos links dos e-mails de recuperação.
 // Ajuste para a URL correta ao hospedar em produção.
@@ -123,55 +168,76 @@ app.post('/api/login', async (req, res) => {
 });
 // Rota para cadastrar novo paciente
 app.post('/api/pacientes', (req, res) => {
-    // Recebe os dados enviados pelo frontend
-    const {
-        nome_paciente,
-        cpf,
-        sexo_paciente,
-        data_nascimento_paciente,
-        nome_responsavel,
-        telefone_paciente,
-        observacoes_paciente
-    } = req.body;
-
-    // Validação de CPF obrigatório
-    if (!cpf || cpf.trim() === '') {
-        return res.status(400).json({ sucesso: false, mensagem: "O campo CPF é obrigatório." });
-    }
-
-    // Comando SQL para inserir na tabela (o id_paciente é automático)
-    const sql = `
-        INSERT INTO paciente 
-        (nome_paciente, cpf, sexo_paciente, data_nascimento_paciente, nome_responsavel, telefone_paciente, observacoes_paciente) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    `;
-
-    // Array com os valores na mesma ordem dos pontos de interrogação
-    const valores = [
-        nome_paciente,
-        cpf.trim(),
-        sexo_paciente,
-        data_nascimento_paciente,
-        nome_responsavel,
-        telefone_paciente,
-        observacoes_paciente
-    ];
-
-    db.query(sql, valores, (err, results) => {
-        if (err) {
-            console.error("Erro ao inserir paciente no banco:", err);
-            // Se for erro de duplicidade de CPF (Unique key violation)
-            if (err.code === 'ER_DUP_ENTRY') {
-                return res.status(400).json({ sucesso: false, mensagem: "Já existe um paciente cadastrado com este CPF." });
+    upload.single('foto_paciente')(req, res, function (err) {
+        if (err instanceof multer.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({ sucesso: false, mensagem: "A imagem excedeu o limite de tamanho de 2MB." });
             }
-            return res.status(500).json({ sucesso: false, mensagem: "Erro ao cadastrar paciente." });
+            return res.status(400).json({ sucesso: false, mensagem: `Erro de upload: ${err.message}` });
+        } else if (err) {
+            return res.status(400).json({ sucesso: false, mensagem: err.message });
         }
 
-        // Se deu tudo certo, devolve uma mensagem de sucesso
-        res.json({
-            sucesso: true,
-            mensagem: "Paciente cadastrado com sucesso!",
-            id_inserido: results.insertId
+        const {
+            nome_paciente,
+            cpf,
+            sexo_paciente,
+            data_nascimento_paciente,
+            nome_responsavel,
+            parentesco_responsavel,
+            telefone_paciente,
+            observacoes_paciente
+        } = req.body;
+
+        // Validação de CPF obrigatório
+        if (!cpf || cpf.trim() === '') {
+            // Se o upload foi feito, mas a validação falhou, deleta o arquivo físico
+            if (req.file && fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
+            }
+            return res.status(400).json({ sucesso: false, mensagem: "O campo CPF é obrigatório." });
+        }
+
+        // Obtém o caminho da foto, se houver upload
+        const foto_paciente = req.file ? `/uploads/${req.file.filename}` : null;
+
+        // Comando SQL para inserir na tabela (o id_paciente é automático)
+        const sql = `
+            INSERT INTO paciente 
+            (nome_paciente, cpf, sexo_paciente, data_nascimento_paciente, nome_responsavel, parentesco_responsavel, telefone_paciente, observacoes_paciente, foto_paciente) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        const valores = [
+            nome_paciente,
+            cpf.trim(),
+            sexo_paciente,
+            data_nascimento_paciente,
+            nome_responsavel,
+            parentesco_responsavel || null,
+            telefone_paciente,
+            observacoes_paciente || null,
+            foto_paciente
+        ];
+
+        db.query(sql, valores, (errQuery, results) => {
+            if (errQuery) {
+                console.error("Erro ao inserir paciente no banco:", errQuery);
+                // Se o upload foi feito, mas o banco falhou, deleta o arquivo físico
+                if (req.file && fs.existsSync(req.file.path)) {
+                    fs.unlinkSync(req.file.path);
+                }
+                if (errQuery.code === 'ER_DUP_ENTRY') {
+                    return res.status(400).json({ sucesso: false, mensagem: "Já existe um paciente cadastrado com este CPF." });
+                }
+                return res.status(500).json({ sucesso: false, mensagem: "Erro ao cadastrar paciente." });
+            }
+
+            res.json({
+                sucesso: true,
+                mensagem: "Paciente cadastrado com sucesso!",
+                id_inserido: results.insertId
+            });
         });
     });
 });
@@ -241,51 +307,94 @@ app.get('/api/pacientes/:id', (req, res) => {
 // Rota para atualizar os dados de um paciente existente
 app.put('/api/pacientes/:id', (req, res) => {
     const { id } = req.params;
-    const {
-        nome_paciente,
-        cpf,
-        sexo_paciente,
-        data_nascimento_paciente,
-        nome_responsavel,
-        telefone_paciente,
-        observacoes_paciente
-    } = req.body;
 
-    // Validação de CPF obrigatório
-    if (!cpf || cpf.trim() === '') {
-        return res.status(400).json({ sucesso: false, mensagem: "O campo CPF é obrigatório." });
-    }
-
-    const sql = `
-        UPDATE paciente 
-        SET nome_paciente = ?, cpf = ?, sexo_paciente = ?, data_nascimento_paciente = ?, nome_responsavel = ?, telefone_paciente = ?, observacoes_paciente = ? 
-        WHERE id_paciente = ?
-    `;
-
-    const valores = [
-        nome_paciente,
-        cpf.trim(),
-        sexo_paciente,
-        data_nascimento_paciente,
-        nome_responsavel,
-        telefone_paciente,
-        observacoes_paciente,
-        id
-    ];
-
-    db.query(sql, valores, (err, results) => {
-        if (err) {
-            console.error("Erro ao atualizar paciente:", err);
-            // Se for erro de duplicidade de CPF (Unique key violation)
-            if (err.code === 'ER_DUP_ENTRY') {
-                return res.status(400).json({ sucesso: false, mensagem: "Já existe outro paciente cadastrado com este CPF." });
+    upload.single('foto_paciente')(req, res, function (err) {
+        if (err instanceof multer.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({ sucesso: false, mensagem: "A imagem excedeu o limite de tamanho de 2MB." });
             }
-            return res.status(500).json({ sucesso: false, mensagem: "Erro ao atualizar paciente." });
+            return res.status(400).json({ sucesso: false, mensagem: `Erro de upload: ${err.message}` });
+        } else if (err) {
+            return res.status(400).json({ sucesso: false, mensagem: err.message });
         }
 
-        res.json({
-            sucesso: true,
-            mensagem: "Paciente atualizado com sucesso!"
+        const {
+            nome_paciente,
+            cpf,
+            sexo_paciente,
+            data_nascimento_paciente,
+            nome_responsavel,
+            parentesco_responsavel,
+            telefone_paciente,
+            observacoes_paciente
+        } = req.body;
+
+        // Validação de CPF obrigatório
+        if (!cpf || cpf.trim() === '') {
+            if (req.file && fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
+            }
+            return res.status(400).json({ sucesso: false, mensagem: "O campo CPF é obrigatório." });
+        }
+
+        const fotoAlterada = req.file !== undefined || req.body.foto_paciente === 'null' || req.body.foto_paciente === '';
+        let sql = '';
+        let valores = [];
+
+        if (fotoAlterada) {
+            const foto_paciente = req.file ? `/uploads/${req.file.filename}` : null;
+            sql = `
+                UPDATE paciente 
+                SET nome_paciente = ?, cpf = ?, sexo_paciente = ?, data_nascimento_paciente = ?, nome_responsavel = ?, parentesco_responsavel = ?, telefone_paciente = ?, observacoes_paciente = ?, foto_paciente = ? 
+                WHERE id_paciente = ?
+            `;
+            valores = [
+                nome_paciente,
+                cpf.trim(),
+                sexo_paciente,
+                data_nascimento_paciente,
+                nome_responsavel,
+                parentesco_responsavel || null,
+                telefone_paciente,
+                observacoes_paciente || null,
+                foto_paciente,
+                id
+            ];
+        } else {
+            sql = `
+                UPDATE paciente 
+                SET nome_paciente = ?, cpf = ?, sexo_paciente = ?, data_nascimento_paciente = ?, nome_responsavel = ?, parentesco_responsavel = ?, telefone_paciente = ?, observacoes_paciente = ? 
+                WHERE id_paciente = ?
+            `;
+            valores = [
+                nome_paciente,
+                cpf.trim(),
+                sexo_paciente,
+                data_nascimento_paciente,
+                nome_responsavel,
+                parentesco_responsavel || null,
+                telefone_paciente,
+                observacoes_paciente || null,
+                id
+            ];
+        }
+
+        db.query(sql, valores, (errQuery, results) => {
+            if (errQuery) {
+                console.error("Erro ao atualizar paciente:", errQuery);
+                if (req.file && fs.existsSync(req.file.path)) {
+                    fs.unlinkSync(req.file.path);
+                }
+                if (errQuery.code === 'ER_DUP_ENTRY') {
+                    return res.status(400).json({ sucesso: false, mensagem: "Já existe outro paciente cadastrado com este CPF." });
+                }
+                return res.status(500).json({ sucesso: false, mensagem: "Erro ao atualizar paciente." });
+            }
+
+            res.json({
+                sucesso: true,
+                mensagem: "Paciente atualizado com sucesso!"
+            });
         });
     });
 });
