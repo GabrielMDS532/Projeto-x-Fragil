@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import mysql from 'mysql2';
 import cors from 'cors';
@@ -77,23 +80,28 @@ db.connect((err) => {
     console.log('Ligado à base de dados x_fragil com sucesso');
 });
 
-// --- Serviço de E-mail: Nodemailer + Ethereal (ambiente de desenvolvimento) ---
-// O Ethereal cria uma caixa de teste descartável na primeira chamada.
-// O link para visualizar o e-mail enviado aparece no console do servidor.
+// --- Serviço de E-mail: Nodemailer com SMTP Real (configurado via .env) ---
 let _emailTransporter = null;
 
 async function getEmailTransporter() {
     if (_emailTransporter) return _emailTransporter;
-    const testAccount = await nodemailer.createTestAccount();
+
+    const host = process.env.SMTP_HOST;
+    const port = parseInt(process.env.SMTP_PORT || '587');
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASS;
+
     _emailTransporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false,
-        auth: { user: testAccount.user, pass: testAccount.pass }
+        host: host,
+        port: port,
+        secure: port === 465, // secure: true para a porta 465, false para outras portas (como 587/25)
+        auth: {
+            user: user,
+            pass: pass
+        }
     });
-    console.log('\n📧 Ethereal Email pronto para testes!');
-    console.log('   Conta Ethereal:', testAccount.user);
-    console.log('   Acesse os e-mails em: https://ethereal.email\n');
+
+    console.log('\n📧 Transportador de E-mail SMTP configurado a partir do .env!');
     return _emailTransporter;
 }
 
@@ -788,13 +796,12 @@ app.post('/api/recuperar-senha', (req, res) => {
                     try {
                         const transporter = await getEmailTransporter();
                         const info = await transporter.sendMail({
-                            from: '"Sistema de Triagem Clínica" <noreply@triagem.com>',
+                            from: process.env.SMTP_USER ? `"Sistema de Triagem Clínica" <${process.env.SMTP_USER}>` : '"Sistema de Triagem Clínica" <noreply@triagem.com>',
                             to: email,
                             subject: 'Recuperação de Senha — Sistema de Triagem Clínica',
                             html: htmlEmail
                         });
-                        console.log('✅ E-mail de recuperação enviado!');
-                        console.log('📧 Visualize o e-mail aqui:', nodemailer.getTestMessageUrl(info));
+                        console.log('✅ E-mail de recuperação enviado com sucesso!');
                     } catch (errEmail) {
                         console.error("Erro ao enviar e-mail de recuperação:", errEmail);
                     }

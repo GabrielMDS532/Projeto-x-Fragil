@@ -1,0 +1,8 @@
+# Dependências do Node
+node_modules/
+
+# Variáveis de ambiente sensíveis
+.env
+
+# Arquivos carregados pelos usuários em tempo de execução
+uploads/
