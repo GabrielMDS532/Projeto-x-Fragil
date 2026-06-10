@@ -19,7 +19,31 @@ body {
     align-items: center;
     justify-content: center;
     background: #e9f2ff;
-    
+    position: relative;
+    overflow: hidden;
+}
+
+/* Borboleta decorativa de fundo no login (Marca d'água) */
+.principal::before {
+    content: "";
+    position: absolute;
+    bottom: -60px;
+    right: -60px;
+    width: 350px;
+    height: 350px;
+    opacity: 0.04;
+    pointer-events: none; /* Defesa clickjacking */
+    user-select: none;
+    background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 50 C30 20, 10 30, 15 55 C18 70, 35 75, 50 60" fill="%233b82f6" opacity="0.85"/><path d="M50 50 C25 10, 5 15, 10 45 C13 60, 30 65, 50 55" fill="%2360a5fa" opacity="0.9"/><path d="M50 50 C35 35, 20 40, 22 52 C23 60, 35 62, 50 55" fill="%2393c5fd" opacity="0.95"/><path d="M50 50 C70 20, 90 30, 85 55 C82 70, 65 75, 50 60" fill="%233b82f6" opacity="0.85"/><path d="M50 50 C75 10, 95 15, 90 45 C87 60, 70 65, 50 55" fill="%2360a5fa" opacity="0.9"/><path d="M50 50 C65 35, 80 40, 78 52 C77 60, 65 62, 50 55" fill="%2393c5fd" opacity="0.95"/><path d="M48 25 C48 22, 52 22, 52 25 L51 75 C51 77, 49 77, 49 75 Z" fill="%231e293b"/><circle cx="50" cy="23" r="3" fill="%231e293b"/><path d="M49 22 Q43 14 38 16" stroke="%231e293b" stroke-width="1.5" stroke-linecap="round"/><path d="M51 22 Q57 14 62 16" stroke="%231e293b" stroke-width="1.5" stroke-linecap="round"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 0;
+}
+
+/* Proteção contra clickjacking e estilos da borboleta */
+.borboleta-ui {
+    pointer-events: none;
+    user-select: none;
 }
 
 /*
@@ -259,6 +283,21 @@ body.dashboard-layout {
 .menu .titulo {
     padding: 30px 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Borboleta Azul (símbolo oficial) no topo do menu lateral */
+.menu .titulo::before {
+    content: "";
+    display: block;
+    width: 45px;
+    height: 45px;
+    margin-bottom: 15px;
+    background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 50 C30 20, 10 30, 15 55 C18 70, 35 75, 50 60" fill="%233b82f6" opacity="0.85"/><path d="M50 50 C25 10, 5 15, 10 45 C13 60, 30 65, 50 55" fill="%2360a5fa" opacity="0.9"/><path d="M50 50 C35 35, 20 40, 22 52 C23 60, 35 62, 50 55" fill="%2393c5fd" opacity="0.95"/><path d="M50 50 C70 20, 90 30, 85 55 C82 70, 65 75, 50 60" fill="%233b82f6" opacity="0.85"/><path d="M50 50 C75 10, 95 15, 90 45 C87 60, 70 65, 50 55" fill="%2360a5fa" opacity="0.9"/><path d="M50 50 C65 35, 80 40, 78 52 C77 60, 65 62, 50 55" fill="%2393c5fd" opacity="0.95"/><path d="M48 25 C48 22, 52 22, 52 25 L51 75 C51 77, 49 77, 49 75 Z" fill="%23ffffff"/><circle cx="50" cy="23" r="3" fill="%23ffffff"/><path d="M49 22 Q43 14 38 16" stroke="%23ffffff" stroke-width="1.5" stroke-linecap="round"/><path d="M51 22 Q57 14 62 16" stroke="%23ffffff" stroke-width="1.5" stroke-linecap="round"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    pointer-events: none; /* Defesa clickjacking */
+    user-select: none;
+    filter: drop-shadow(0px 2px 6px rgba(59, 130, 246, 0.4));
 }
 
 .menu .titulo h3 {
@@ -772,18 +811,119 @@ tbody tr:hover {
 
 /* Responsivo */
 @media (max-width: 768px) {
+    body.dashboard-layout {
+        flex-direction: column;
+        height: auto;
+        overflow: auto;
+    }
+    
     .menu {
-        width: 0;
-        transform: translateX(-100%);
+        width: 100% !important;
+        height: auto !important;
+        position: relative !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: flex-start !important;
+        transform: none !important;
+        padding: 15px !important;
+    }
+    
+    .menu .titulo {
+        padding: 10px 0 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+    
+    .menu .titulo::before {
+        margin-bottom: 0 !important;
+        margin-right: 15px !important;
+        display: inline-block !important;
+        width: 35px !important;
+        height: 35px !important;
+    }
+    
+    .Paginas {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        padding: 15px 0 !important;
+        width: 100% !important;
+        gap: 8px !important;
+        overflow-y: visible !important;
+    }
+    
+    .Paginas button {
+        width: auto !important;
+        flex: 1 1 calc(50% - 8px) !important;
+        padding: 10px 12px !important;
+        font-size: 13px !important;
+        margin-bottom: 0 !important;
+        text-align: center !important;
+    }
+    
+    .Acesso_usuario, .logout {
+        width: 100% !important;
+        padding: 8px 0 !important;
+        border-top: none !important;
+    }
+    
+    .btn-acesso_usuario, .btn-logout {
+        padding: 10px !important;
+        font-size: 13px !important;
     }
     
     .Principal {
-        margin-left: 0;
+        margin-left: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
     }
     
-    .form-row,
+    .container_area {
+        padding: 15px !important;
+        overflow: visible !important;
+    }
+    
+    /* Tabelas responsivas */
+    .tabela-pacientes,
+    .tabela-avaliacoes,
+    .tabela-relatorios {
+        width: 100% !important;
+        overflow-x: auto !important;
+        display: block !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .tabela-pacientes table,
+    .tabela-avaliacoes table,
+    .tabela-relatorios table {
+        min-width: 650px !important;
+    }
+    
+    /* Formulários responsivos */
+    .form-container {
+        padding: 20px 15px !important;
+        width: 100% !important;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+    
+    /* Card de login */
+    .container_login {
+        padding: 30px 20px !important;
+        margin: 15px !important;
+        max-width: 90% !important;
+    }
+    
     .score-display {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
     }
 }
 
