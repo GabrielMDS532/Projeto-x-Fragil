@@ -62,7 +62,7 @@
                         </div>
                         <div class="form-group">
                             <label for="senha">Senha *</label>
-                            <input type="password" id="senha" required placeholder="Mínimo 6 caracteres">
+                            <input type="password" id="senha" required placeholder="Mínimo 6 caracteres" autocomplete="new-password">
                         </div>
                     </div>
                     <div class="form-row">
@@ -83,19 +83,21 @@
 
             <!-- Tabela de Usuários -->
             <div class="tabela-pacientes">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nome Completo</th>
-                            <th>E-mail</th>
-                            <th>Tipo de Usuário</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTableBody">
-                        <!-- Renderizado dinamicamente pelo JavaScript para remover dados mockados permanente -->
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nome Completo</th>
+                                <th>E-mail</th>
+                                <th>Tipo de Usuário</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Renderizado dinamicamente pelo JavaScript para remover dados mockados permanente -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
         </div>
