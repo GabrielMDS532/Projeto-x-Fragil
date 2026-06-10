@@ -17,6 +17,8 @@ function verificarAutenticacao() {
  * 2. INICIALIZAÇÃO DA PÁGINA
  * =========================================================================
  */
+let removerFotoFlag = false;
+
 function inicializarCadastroPaciente() {
     if (!verificarAutenticacao()) return;
 
@@ -31,6 +33,18 @@ function inicializarCadastroPaciente() {
 
     // Configurar máscara de CPF
     configurarMascaraCPF();
+
+    // Configurar máscara de Telefone
+    configurarMascaraTelefone();
+
+    // Configurar preview de foto
+    configurarPreviewFoto();
+
+    // Configurar o ouvinte de remoção de foto (lixeira)
+    const btnRemover = document.getElementById('btn-remover-foto');
+    if (btnRemover) {
+        btnRemover.addEventListener('click', removerFotoSelecionada);
+    }
 
     // Detectar se está no modo de edição (presença do id_paciente na URL)
     const urlParams = new URLSearchParams(window.location.search);
@@ -67,6 +81,94 @@ function configurarMascaraCPF() {
     }
 }
 
+function configurarMascaraTelefone() {
+    const inputTelefone = document.getElementById('telefone_paciente');
+    if (inputTelefone) {
+        inputTelefone.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, ''); // Remove tudo o que não é número
+            if (value.length > 11) value = value.slice(0, 11);
+
+            // Máscara dinâmica: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX
+            if (value.length > 6) {
+                const parte1 = value.slice(0, 2);
+                const parte2 = value.length === 11 ? value.slice(2, 7) : value.slice(2, 6);
+                const parte3 = value.length === 11 ? value.slice(7) : value.slice(6);
+                value = `(${parte1}) ${parte2}-${parte3}`;
+            } else if (value.length > 2) {
+                value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+            } else if (value.length > 0) {
+                value = `(${value}`;
+            }
+            e.target.value = value;
+        });
+    }
+}
+
+function configurarPreviewFoto() {
+    const inputFoto = document.getElementById('foto_paciente');
+    const imgPreview = document.getElementById('foto_preview');
+    const placeholder = document.getElementById('preview-placeholder');
+    const btnRemover = document.getElementById('btn-remover-foto');
+
+    if (inputFoto && imgPreview && placeholder) {
+        inputFoto.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('A imagem não pode exceder o tamanho máximo de 2MB.');
+                    inputFoto.value = '';
+                    imgPreview.style.display = 'none';
+                    placeholder.style.display = 'block';
+                    if (btnRemover) btnRemover.style.display = 'none';
+                    return;
+                }
+
+                const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Apenas imagens nos formatos PNG, JPG, JPEG ou WEBP são permitidas.');
+                    inputFoto.value = '';
+                    imgPreview.style.display = 'none';
+                    placeholder.style.display = 'block';
+                    if (btnRemover) btnRemover.style.display = 'none';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    imgPreview.src = event.target.result;
+                    imgPreview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    if (btnRemover) btnRemover.style.display = 'flex';
+                    removerFotoFlag = false;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imgPreview.src = '';
+                imgPreview.style.display = 'none';
+                placeholder.style.display = 'block';
+                if (btnRemover) btnRemover.style.display = 'none';
+            }
+        });
+    }
+}
+
+function removerFotoSelecionada() {
+    const inputFoto = document.getElementById('foto_paciente');
+    const imgPreview = document.getElementById('foto_preview');
+    const placeholder = document.getElementById('preview-placeholder');
+    const btnRemover = document.getElementById('btn-remover-foto');
+
+    if (inputFoto) inputFoto.value = '';
+    if (imgPreview) {
+        imgPreview.src = '';
+        imgPreview.style.display = 'none';
+    }
+    if (placeholder) placeholder.style.display = 'block';
+    if (btnRemover) btnRemover.style.display = 'none';
+
+    removerFotoFlag = true;
+}
+
 // Função para buscar dados do paciente para edição
 async function carregarDadosPacienteEdicao(id) {
     try {
@@ -91,8 +193,24 @@ async function carregarDadosPacienteEdicao(id) {
             }
 
             document.getElementById('nome_responsavel').value = paciente.nome_responsavel || '';
+            if (paciente.parentesco_responsavel) {
+                document.getElementById('parentesco_responsavel').value = paciente.parentesco_responsavel;
+            }
             document.getElementById('telefone_paciente').value = paciente.telefone_paciente || '';
             document.getElementById('observacoes_paciente').value = paciente.observacoes_paciente || '';
+
+            // Se o paciente tiver foto, exibe o preview
+            if (paciente.foto_paciente) {
+                const imgPreview = document.getElementById('foto_preview');
+                const placeholder = document.getElementById('preview-placeholder');
+                const btnRemover = document.getElementById('btn-remover-foto');
+                if (imgPreview && placeholder) {
+                    imgPreview.src = `http://localhost:3000${paciente.foto_paciente}`;
+                    imgPreview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    if (btnRemover) btnRemover.style.display = 'flex';
+                }
+            }
 
             // Atualiza os títulos da página de forma elegante
             const tituloForm = document.querySelector('.Mensagem_entrada h4');
@@ -127,21 +245,33 @@ async function salvarPaciente(event) {
     const selectSexo = document.getElementById('sexo_paciente');
     const inputDataNasc = document.getElementById('data_nascimento_paciente');
     const inputResponsavel = document.getElementById('nome_responsavel');
+    const inputParentesco = document.getElementById('parentesco_responsavel');
     const inputTelefone = document.getElementById('telefone_paciente');
     const textareaObservacoes = document.getElementById('observacoes_paciente');
+    const inputFoto = document.getElementById('foto_paciente');
     
     if (!inputNome || !inputCpf || !selectSexo || !inputDataNasc || !inputResponsavel || !inputTelefone) return;
 
-    // Montando o objeto JSON
-    const dadosPaciente = {
-        nome_paciente: inputNome.value.trim(),
-        cpf: inputCpf.value.trim(),
-        sexo_paciente: selectSexo.value, 
-        data_nascimento_paciente: inputDataNasc.value, 
-        nome_responsavel: inputResponsavel.value.trim(),
-        telefone_paciente: inputTelefone.value.trim(),
-        observacoes_paciente: textareaObservacoes ? textareaObservacoes.value.trim() : null
-    };
+    // Criando o objeto FormData para enviar dados textuais e arquivos binários
+    const formData = new FormData();
+    formData.append('nome_paciente', inputNome.value.trim());
+    formData.append('cpf', inputCpf.value.trim());
+    formData.append('sexo_paciente', selectSexo.value);
+    formData.append('data_nascimento_paciente', inputDataNasc.value);
+    formData.append('nome_responsavel', inputResponsavel.value.trim());
+    if (inputParentesco) {
+        formData.append('parentesco_responsavel', inputParentesco.value.trim());
+    }
+    formData.append('telefone_paciente', inputTelefone.value.trim());
+    formData.append('observacoes_paciente', textareaObservacoes ? textareaObservacoes.value.trim() : '');
+
+    // Se uma foto foi selecionada, adiciona ao FormData
+    if (inputFoto && inputFoto.files[0]) {
+        formData.append('foto_paciente', inputFoto.files[0]);
+    }
+
+    // Flag de remoção de foto
+    formData.append('remover_foto', removerFotoFlag ? 'true' : 'false');
 
     const url = idPaciente 
         ? `http://localhost:3000/api/pacientes/${idPaciente}`
@@ -152,10 +282,7 @@ async function salvarPaciente(event) {
     try {
         const resposta = await fetch(url, {
             method: metodo,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(dadosPaciente)
+            body: formData
         });
 
         const dados = await resposta.json();

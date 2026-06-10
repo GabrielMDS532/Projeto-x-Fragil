@@ -337,63 +337,94 @@ app.put('/api/pacientes/:id', (req, res) => {
             return res.status(400).json({ sucesso: false, mensagem: "O campo CPF é obrigatório." });
         }
 
-        const fotoAlterada = req.file !== undefined || req.body.foto_paciente === 'null' || req.body.foto_paciente === '';
-        let sql = '';
-        let valores = [];
-
-        if (fotoAlterada) {
-            const foto_paciente = req.file ? `/uploads/${req.file.filename}` : null;
-            sql = `
-                UPDATE paciente 
-                SET nome_paciente = ?, cpf = ?, sexo_paciente = ?, data_nascimento_paciente = ?, nome_responsavel = ?, parentesco_responsavel = ?, telefone_paciente = ?, observacoes_paciente = ?, foto_paciente = ? 
-                WHERE id_paciente = ?
-            `;
-            valores = [
-                nome_paciente,
-                cpf.trim(),
-                sexo_paciente,
-                data_nascimento_paciente,
-                nome_responsavel,
-                parentesco_responsavel || null,
-                telefone_paciente,
-                observacoes_paciente || null,
-                foto_paciente,
-                id
-            ];
-        } else {
-            sql = `
-                UPDATE paciente 
-                SET nome_paciente = ?, cpf = ?, sexo_paciente = ?, data_nascimento_paciente = ?, nome_responsavel = ?, parentesco_responsavel = ?, telefone_paciente = ?, observacoes_paciente = ? 
-                WHERE id_paciente = ?
-            `;
-            valores = [
-                nome_paciente,
-                cpf.trim(),
-                sexo_paciente,
-                data_nascimento_paciente,
-                nome_responsavel,
-                parentesco_responsavel || null,
-                telefone_paciente,
-                observacoes_paciente || null,
-                id
-            ];
-        }
-
-        db.query(sql, valores, (errQuery, results) => {
-            if (errQuery) {
-                console.error("Erro ao atualizar paciente:", errQuery);
+        // Busca a foto atual no banco para limpeza de arquivos
+        const sqlSelect = "SELECT foto_paciente FROM paciente WHERE id_paciente = ?";
+        db.query(sqlSelect, [id], (errSelect, resultsSelect) => {
+            if (errSelect) {
+                console.error("Erro ao buscar foto atual para atualização:", errSelect);
                 if (req.file && fs.existsSync(req.file.path)) {
                     fs.unlinkSync(req.file.path);
                 }
-                if (errQuery.code === 'ER_DUP_ENTRY') {
-                    return res.status(400).json({ sucesso: false, mensagem: "Já existe outro paciente cadastrado com este CPF." });
-                }
-                return res.status(500).json({ sucesso: false, mensagem: "Erro ao atualizar paciente." });
+                return res.status(500).json({ sucesso: false, mensagem: "Erro interno do servidor." });
             }
 
-            res.json({
-                sucesso: true,
-                mensagem: "Paciente atualizado com sucesso!"
+            const paciente = resultsSelect[0];
+            const fotoAntiga = paciente ? paciente.foto_paciente : null;
+
+            const removerFoto = req.body.remover_foto === 'true';
+            const novoUpload = req.file !== undefined;
+            const fotoAlterada = removerFoto || novoUpload;
+
+            let sql = '';
+            let valores = [];
+
+            if (fotoAlterada) {
+                const foto_paciente = novoUpload ? `/uploads/${req.file.filename}` : null;
+                sql = `
+                    UPDATE paciente 
+                    SET nome_paciente = ?, cpf = ?, sexo_paciente = ?, data_nascimento_paciente = ?, nome_responsavel = ?, parentesco_responsavel = ?, telefone_paciente = ?, observacoes_paciente = ?, foto_paciente = ? 
+                    WHERE id_paciente = ?
+                `;
+                valores = [
+                    nome_paciente,
+                    cpf.trim(),
+                    sexo_paciente,
+                    data_nascimento_paciente,
+                    nome_responsavel,
+                    parentesco_responsavel || null,
+                    telefone_paciente,
+                    observacoes_paciente || null,
+                    foto_paciente,
+                    id
+                ];
+            } else {
+                sql = `
+                    UPDATE paciente 
+                    SET nome_paciente = ?, cpf = ?, sexo_paciente = ?, data_nascimento_paciente = ?, nome_responsavel = ?, parentesco_responsavel = ?, telefone_paciente = ?, observacoes_paciente = ? 
+                    WHERE id_paciente = ?
+                `;
+                valores = [
+                    nome_paciente,
+                    cpf.trim(),
+                    sexo_paciente,
+                    data_nascimento_paciente,
+                    nome_responsavel,
+                    parentesco_responsavel || null,
+                    telefone_paciente,
+                    observacoes_paciente || null,
+                    id
+                ];
+            }
+
+            db.query(sql, valores, (errQuery, results) => {
+                if (errQuery) {
+                    console.error("Erro ao atualizar paciente:", errQuery);
+                    if (req.file && fs.existsSync(req.file.path)) {
+                        fs.unlinkSync(req.file.path);
+                    }
+                    if (errQuery.code === 'ER_DUP_ENTRY') {
+                        return res.status(400).json({ sucesso: false, mensagem: "Já existe outro paciente cadastrado com este CPF." });
+                    }
+                    return res.status(500).json({ sucesso: false, mensagem: "Erro ao atualizar paciente." });
+                }
+
+                // Se a atualização foi feita no banco e houve alteração na foto, removemos a foto antiga do disco
+                if (fotoAlterada && fotoAntiga) {
+                    const filePath = '.' + fotoAntiga;
+                    try {
+                        if (fs.existsSync(filePath)) {
+                            fs.unlinkSync(filePath);
+                            console.log(`Foto antiga apagada com sucesso do disco: ${filePath}`);
+                        }
+                    } catch (errUnlink) {
+                        console.error("Erro ao apagar foto antiga do disco:", errUnlink);
+                    }
+                }
+
+                res.json({
+                    sucesso: true,
+                    mensagem: "Paciente atualizado com sucesso!"
+                });
             });
         });
     });
@@ -402,17 +433,42 @@ app.put('/api/pacientes/:id', (req, res) => {
 // Rota para remover um paciente por ID
 app.delete('/api/pacientes/:id', (req, res) => {
     const { id } = req.params;
-    const sql = "DELETE FROM paciente WHERE id_paciente = ?";
 
-    db.query(sql, [id], (err, results) => {
-        if (err) {
-            console.error("Erro ao remover paciente:", err);
-            return res.status(500).json({ sucesso: false, mensagem: "Erro ao remover paciente." });
+    // Busca a foto do paciente antes de deletar o registro para evitar órfão
+    const sqlSelect = "SELECT foto_paciente FROM paciente WHERE id_paciente = ?";
+    db.query(sqlSelect, [id], (errSelect, resultsSelect) => {
+        if (errSelect) {
+            console.error("Erro ao buscar paciente para remoção de foto:", errSelect);
+            return res.status(500).json({ sucesso: false, mensagem: "Erro ao remover paciente do banco de dados." });
         }
 
-        res.json({
-            sucesso: true,
-            mensagem: "Paciente removido com sucesso!"
+        const paciente = resultsSelect[0];
+        const foto_paciente = paciente ? paciente.foto_paciente : null;
+
+        const sqlDelete = "DELETE FROM paciente WHERE id_paciente = ?";
+        db.query(sqlDelete, [id], (errDelete, resultsDelete) => {
+            if (errDelete) {
+                console.error("Erro ao remover paciente:", errDelete);
+                return res.status(500).json({ sucesso: false, mensagem: "Erro ao remover paciente." });
+            }
+
+            // Exclui fisicamente a foto se houver uma cadastrada
+            if (foto_paciente) {
+                const filePath = '.' + foto_paciente;
+                try {
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                        console.log(`Foto apagada com sucesso do disco: ${filePath}`);
+                    }
+                } catch (errUnlink) {
+                    console.error("Falha ao remover arquivo físico de foto:", errUnlink);
+                }
+            }
+
+            res.json({
+                sucesso: true,
+                mensagem: "Paciente removido com sucesso!"
+            });
         });
     });
 });
