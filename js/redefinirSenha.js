@@ -60,7 +60,8 @@ async function inicializar() {
     // Consulta o backend para validar o token
     try {
         const resposta = await fetch(
-            `${API_BASE}/api/validar-token?token=${encodeURIComponent(token)}`
+            `${API_BASE}/api/validar-token?token=${encodeURIComponent(token)}`,
+            { credentials: 'include' }
         );
 
         if (!resposta.ok) {
@@ -170,6 +171,7 @@ async function redefinirSenha(event) {
         const resposta = await fetch(`${API_BASE}/api/redefinir-senha`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             // Envia o token (lido da URL) e a nova senha. Nunca salva no localStorage.
             body: JSON.stringify({ token, senha: novaSenha })
         });

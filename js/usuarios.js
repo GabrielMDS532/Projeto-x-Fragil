@@ -45,7 +45,7 @@ function inicializarUsuarios() {
 
 async function carregarUsuarios() {
     try {
-        const resposta = await fetch('http://localhost:3000/api/usuarios');
+        const resposta = await fetch('http://localhost:3000/api/usuarios', { credentials: 'include' });
         const dados = await resposta.json();
 
         if (dados.sucesso) {
@@ -148,6 +148,7 @@ async function saveUser(event) {
             headers: {
                 'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify(novoUsuario)
         });
 
@@ -184,7 +185,8 @@ async function removerUsuario(id) {
 
     try {
         const resposta = await fetch(`http://localhost:3000/api/usuarios/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            credentials: 'include',
         });
 
         const dados = await resposta.json();
@@ -212,14 +214,7 @@ function navigate(page) {
 }
 
 function logout() {
-    // Remoção estrita das chaves de sessão sem apagar os bancos de dados simulados!
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('isAdmin');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userDisplayName');
-
-    window.location.href = '../cadastro/login.html';
+    encerrarSessao('../cadastro/login.html');
 }
 
 // Inicializa a página

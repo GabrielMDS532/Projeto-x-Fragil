@@ -52,7 +52,7 @@ function configurarNivelAcesso(isAdmin) {
 
 async function carregarDadosDashboard() {
     try {
-        const resposta = await fetch('http://localhost:3000/api/dashboard/stats');
+        const resposta = await fetch('http://localhost:3000/api/dashboard/stats', { credentials: 'include' });
         const dados = await resposta.json();
 
         if (dados.sucesso) {
@@ -117,14 +117,7 @@ function navigate(page) {
 }
 
 function logout() {
-    // Remoção estrita das chaves de sessão sem apagar os bancos de dados simulados!
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('isAdmin');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userDisplayName');
-    
-    window.location.href = '../cadastro/login.html';
+    encerrarSessao('../cadastro/login.html');
 }
 
 // Inicializa tudo automaticamente

@@ -86,7 +86,7 @@ function inicializarNovaAvaliacao() {
 async function buscarPacientesParaSelect() {
     try {
         // Faz a requisição real para o backend MySQL
-        const resposta = await fetch('http://localhost:3000/api/pacientes');
+        const resposta = await fetch('http://localhost:3000/api/pacientes', { credentials: 'include' });
         const dados = await resposta.json();
 
         if (dados.sucesso) {
@@ -219,14 +219,7 @@ function navigate(page) {
 }
 
 function logout() {
-    // Remoção estrita das chaves de sessão sem apagar os bancos de dados simulados!
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('isAdmin');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userDisplayName');
-
-    window.location.href = '../cadastro/login.html';
+    encerrarSessao('../cadastro/login.html');
 }
 
 // Dispara o gatilho inicial ao carregar o DOM

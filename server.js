@@ -10,10 +10,61 @@ import nodemailer from 'nodemailer';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { promises as fsPromises } from 'fs';
+import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET && NODE_ENV === 'production') {
+    console.error('ERRO: JWT_SECRET é obrigatório em produção. Defina no .env.');
+    process.exit(1);
+}
+
+const chaveJwt = JWT_SECRET || 'dev-insecure-key-change-me';
 
 const app = express();
+
+const limiteGeral = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 150,
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+const limiteLogin = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { sucesso: false, mensagem: 'Muitas tentativas de login. Tente novamente em 15 minutos.' },
+});
+
+app.use(limiteGeral);
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", "data:", "blob:"],
+            connectSrc: ["'self'"],
+            fontSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            frameSrc: ["'none'"],
+        },
+    },
+}));
+app.use(cookieParser());
+app.use(cors({
+    origin: ALLOWED_ORIGIN,
+    credentials: true,
+}));
 app.use(express.json());
-app.use(cors());
 // Serve os arquivos HTML/CSS/JS do frontend via http://localhost:3000
 app.use(express.static('.'));
 // Serve a pasta de uploads estaticamente
@@ -63,21 +114,83 @@ const upload = multer({
 // Ajuste para a URL correta ao hospedar em produção.
 const FRONTEND_BASE_URL = 'http://localhost:3000';
 
-// Ligação com a base dados do MySQL
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '', // Cada um deve mudar a senha de acordo com o seu workbench
-    database: 'x_fragil'
+// Pool de conexões MySQL (evita ECONNRESET por timeout de conexão única)
+const db = mysql.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'x_fragil',
+    connectionLimit: 10,
+    waitForConnections: true,
 });
 
-// Testando a ligação com o banco
-db.connect((err) => {
+db.getConnection((err, connection) => {
     if (err) {
         console.error('Erro ao ligar à base de dados:', err);
         return;
     }
-    console.log('Ligado à base de dados x_fragil com sucesso');
+    console.log('Pool MySQL ligado à base de dados x_fragil com sucesso');
+    connection.release();
+});
+
+async function apagarArquivoFoto(caminhoRelativo) {
+    if (!caminhoRelativo) return;
+
+    const filePath = caminhoRelativo.startsWith('/')
+        ? path.resolve('.', caminhoRelativo.slice(1))
+        : path.resolve('.', caminhoRelativo.replace(/^\.\//, ''));
+
+    try {
+        await fsPromises.access(filePath);
+        await fsPromises.unlink(filePath);
+        console.log(`[SecOps] Imagem removida: ${filePath}`);
+    } catch (error) {
+        if (error.code !== 'ENOENT') {
+            console.error(`[SecOps] Erro ao apagar arquivo: ${filePath}`, error);
+        }
+    }
+}
+
+function autenticarToken(req, res, next) {
+    const token = req.cookies?.token;
+    if (!token) {
+        return res.status(401).json({ sucesso: false, mensagem: 'Não autenticado.' });
+    }
+
+    try {
+        const payload = jwt.verify(token, chaveJwt);
+        req.usuario = {
+            id_usuario: payload.id_usuario,
+            tipo_usuario: payload.tipo_usuario,
+        };
+        next();
+    } catch (_err) {
+        return res.status(401).json({ sucesso: false, mensagem: 'Sessão inválida ou expirada.' });
+    }
+}
+
+function autorizarAdmin(req, res, next) {
+    if (req.usuario?.tipo_usuario !== 'ADMIN') {
+        return res.status(403).json({ sucesso: false, mensagem: 'Acesso restrito a administradores.' });
+    }
+    next();
+}
+
+function rotaPublica(req) {
+    return (
+        (req.method === 'POST' && req.path === '/login') ||
+        (req.method === 'POST' && req.path === '/recuperar-senha') ||
+        (req.method === 'GET' && req.path === '/validar-token') ||
+        (req.method === 'POST' && req.path === '/redefinir-senha') ||
+        (req.method === 'POST' && req.path === '/logout')
+    );
+}
+
+app.use('/api', (req, res, next) => {
+    if (rotaPublica(req)) {
+        return next();
+    }
+    return autenticarToken(req, res, next);
 });
 
 // --- Serviço de E-mail: Nodemailer com SMTP Real (configurado via .env) ---
@@ -108,7 +221,7 @@ async function getEmailTransporter() {
 // --- Rota de Login com Migração Suave para bcrypt ---
 // Se a senha no banco for texto puro e bater, permite login e migra para hash.
 // Se já for hash, usa bcrypt.compare. Se não bater, nega acesso.
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', limiteLogin, async (req, res) => {
     const { email, senha } = req.body;
 
     // Busca pelo e-mail apenas; a verificação da senha ocorre no código, não no SQL
@@ -162,6 +275,19 @@ app.post('/api/login', async (req, res) => {
             );
         }
 
+        const token = jwt.sign(
+            { id_usuario: user.id_usuario, tipo_usuario: user.tipo_usuario },
+            chaveJwt,
+            { expiresIn: '8h' }
+        );
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 8 * 60 * 60 * 1000,
+        });
+
         res.json({
             sucesso: true,
             usuario: {
@@ -172,6 +298,25 @@ app.post('/api/login', async (req, res) => {
                 tipo_usuario: user.tipo_usuario
             }
         });
+    });
+});
+
+app.post('/api/logout', (req, res) => {
+    res.clearCookie('token', {
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: NODE_ENV === 'production',
+    });
+    res.json({ sucesso: true, mensagem: 'Logout realizado.' });
+});
+
+app.get('/api/sessao', (req, res) => {
+    res.json({
+        sucesso: true,
+        usuario: {
+            id_usuario: req.usuario.id_usuario,
+            tipo_usuario: req.usuario.tipo_usuario,
+        },
     });
 });
 // Rota para cadastrar novo paciente
@@ -200,8 +345,8 @@ app.post('/api/pacientes', (req, res) => {
         // Validação de CPF obrigatório
         if (!cpf || cpf.trim() === '') {
             // Se o upload foi feito, mas a validação falhou, deleta o arquivo físico
-            if (req.file && fs.existsSync(req.file.path)) {
-                fs.unlinkSync(req.file.path);
+            if (req.file) {
+                void apagarArquivoFoto(req.file.path);
             }
             return res.status(400).json({ sucesso: false, mensagem: "O campo CPF é obrigatório." });
         }
@@ -232,8 +377,8 @@ app.post('/api/pacientes', (req, res) => {
             if (errQuery) {
                 console.error("Erro ao inserir paciente no banco:", errQuery);
                 // Se o upload foi feito, mas o banco falhou, deleta o arquivo físico
-                if (req.file && fs.existsSync(req.file.path)) {
-                    fs.unlinkSync(req.file.path);
+                if (req.file) {
+                    void apagarArquivoFoto(req.file.path);
                 }
                 if (errQuery.code === 'ER_DUP_ENTRY') {
                     return res.status(400).json({ sucesso: false, mensagem: "Já existe um paciente cadastrado com este CPF." });
@@ -339,8 +484,8 @@ app.put('/api/pacientes/:id', (req, res) => {
 
         // Validação de CPF obrigatório
         if (!cpf || cpf.trim() === '') {
-            if (req.file && fs.existsSync(req.file.path)) {
-                fs.unlinkSync(req.file.path);
+            if (req.file) {
+                void apagarArquivoFoto(req.file.path);
             }
             return res.status(400).json({ sucesso: false, mensagem: "O campo CPF é obrigatório." });
         }
@@ -350,8 +495,8 @@ app.put('/api/pacientes/:id', (req, res) => {
         db.query(sqlSelect, [id], (errSelect, resultsSelect) => {
             if (errSelect) {
                 console.error("Erro ao buscar foto atual para atualização:", errSelect);
-                if (req.file && fs.existsSync(req.file.path)) {
-                    fs.unlinkSync(req.file.path);
+                if (req.file) {
+                    void apagarArquivoFoto(req.file.path);
                 }
                 return res.status(500).json({ sucesso: false, mensagem: "Erro interno do servidor." });
             }
@@ -407,8 +552,8 @@ app.put('/api/pacientes/:id', (req, res) => {
             db.query(sql, valores, (errQuery, results) => {
                 if (errQuery) {
                     console.error("Erro ao atualizar paciente:", errQuery);
-                    if (req.file && fs.existsSync(req.file.path)) {
-                        fs.unlinkSync(req.file.path);
+                    if (req.file) {
+                        void apagarArquivoFoto(req.file.path);
                     }
                     if (errQuery.code === 'ER_DUP_ENTRY') {
                         return res.status(400).json({ sucesso: false, mensagem: "Já existe outro paciente cadastrado com este CPF." });
@@ -418,15 +563,7 @@ app.put('/api/pacientes/:id', (req, res) => {
 
                 // Se a atualização foi feita no banco e houve alteração na foto, removemos a foto antiga do disco
                 if (fotoAlterada && fotoAntiga) {
-                    const filePath = '.' + fotoAntiga;
-                    try {
-                        if (fs.existsSync(filePath)) {
-                            fs.unlinkSync(filePath);
-                            console.log(`Foto antiga apagada com sucesso do disco: ${filePath}`);
-                        }
-                    } catch (errUnlink) {
-                        console.error("Erro ao apagar foto antiga do disco:", errUnlink);
-                    }
+                    void apagarArquivoFoto(fotoAntiga);
                 }
 
                 res.json({
@@ -462,15 +599,7 @@ app.delete('/api/pacientes/:id', (req, res) => {
 
             // Exclui fisicamente a foto se houver uma cadastrada
             if (foto_paciente) {
-                const filePath = '.' + foto_paciente;
-                try {
-                    if (fs.existsSync(filePath)) {
-                        fs.unlinkSync(filePath);
-                        console.log(`Foto apagada com sucesso do disco: ${filePath}`);
-                    }
-                } catch (errUnlink) {
-                    console.error("Falha ao remover arquivo físico de foto:", errUnlink);
-                }
+                void apagarArquivoFoto(foto_paciente);
             }
 
             res.json({
@@ -634,7 +763,7 @@ app.get('/api/dashboard/stats', (req, res) => {
 });
 
 // Rota para listar profissionais (omitindo senhas por segurança)
-app.get('/api/usuarios', (req, res) => {
+app.get('/api/usuarios', autorizarAdmin, (req, res) => {
     const sql = "SELECT id_usuario, nome_usuario, sobrenome_usuario, email, tipo_usuario, data_criacao FROM usuario ORDER BY nome_usuario ASC";
 
     db.query(sql, (err, results) => {
@@ -651,7 +780,7 @@ app.get('/api/usuarios', (req, res) => {
 });
 
 // Rota para cadastrar um novo profissional
-app.post('/api/usuarios', (req, res) => {
+app.post('/api/usuarios', autorizarAdmin, (req, res) => {
     const { nome_usuario, sobrenome_usuario, email, senha, tipo_usuario } = req.body;
 
     if (!nome_usuario || !sobrenome_usuario || !email || !senha || !tipo_usuario) {
@@ -679,7 +808,7 @@ app.post('/api/usuarios', (req, res) => {
 });
 
 // Rota para excluir profissional por ID (Protegendo administrador padrão)
-app.delete('/api/usuarios/:id', (req, res) => {
+app.delete('/api/usuarios/:id', autorizarAdmin, (req, res) => {
     const { id } = req.params;
 
     if (parseInt(id) === 1) {
@@ -702,7 +831,7 @@ app.delete('/api/usuarios/:id', (req, res) => {
 });
 
 // Rota para excluir relatório por ID (Exclusivo do Admin no controle de frontend)
-app.delete('/api/relatorios/:id', (req, res) => {
+app.delete('/api/relatorios/:id', autorizarAdmin, (req, res) => {
     const { id } = req.params;
 
     const sql = "DELETE FROM relatorio WHERE id_relatorio = ?";
