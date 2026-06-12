@@ -9,6 +9,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f5f5f5;
     color: #333;
+    display: inline;
 }
 
 /* Página de Login */
@@ -18,9 +19,36 @@ body {
     align-items: center;
     justify-content: center;
     background: #e9f2ff;
-    
+    position: relative;
+    overflow: hidden;
 }
 
+/* Borboleta decorativa de fundo no login (Marca d'água) */
+.principal::before {
+    content: "";
+    position: absolute;
+    bottom: -60px;
+    right: -60px;
+    width: 350px;
+    height: 350px;
+    opacity: 0.04;
+    pointer-events: none; /* Defesa clickjacking */
+    user-select: none;
+    background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 50 C30 20, 10 30, 15 55 C18 70, 35 75, 50 60" fill="%233b82f6" opacity="0.85"/><path d="M50 50 C25 10, 5 15, 10 45 C13 60, 30 65, 50 55" fill="%2360a5fa" opacity="0.9"/><path d="M50 50 C35 35, 20 40, 22 52 C23 60, 35 62, 50 55" fill="%2393c5fd" opacity="0.95"/><path d="M50 50 C70 20, 90 30, 85 55 C82 70, 65 75, 50 60" fill="%233b82f6" opacity="0.85"/><path d="M50 50 C75 10, 95 15, 90 45 C87 60, 70 65, 50 55" fill="%2360a5fa" opacity="0.9"/><path d="M50 50 C65 35, 80 40, 78 52 C77 60, 65 62, 50 55" fill="%2393c5fd" opacity="0.95"/><path d="M48 25 C48 22, 52 22, 52 25 L51 75 C51 77, 49 77, 49 75 Z" fill="%231e293b"/><circle cx="50" cy="23" r="3" fill="%231e293b"/><path d="M49 22 Q43 14 38 16" stroke="%231e293b" stroke-width="1.5" stroke-linecap="round"/><path d="M51 22 Q57 14 62 16" stroke="%231e293b" stroke-width="1.5" stroke-linecap="round"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 0;
+}
+
+/* Proteção contra clickjacking e estilos da borboleta */
+.borboleta-ui {
+    pointer-events: none;
+    user-select: none;
+}
+
+/*
+container_login aplica estilização no blco onde tem o formulário para o login.
+*/
 .container_login {
     background: white;
     padding: 50px 40px; /* Da mais espaço interno */
@@ -31,7 +59,7 @@ body {
     text-align: center; /* Aqui Centraliza o texto e ícone */
 }
 
-.container_login h2 {
+.container_login h2 {/* Aplica estilos no título do formulário de login */
     color: #1a202c;
     margin-bottom: 10px;
     font-size: 32px;
@@ -80,10 +108,6 @@ body {
 }
 
 .container_login p {
-    /*text-align: center;
-    margin-top: 20px;
-    font-size: 14px;
-    color: #666;*/
     color: #718096;
     margin-bottom: 30px;
 }
@@ -94,6 +118,144 @@ body {
 }
 
 .container_login a:hover {
+    text-decoration: underline;
+}
+
+.container_recovery {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e9f2ff;
+}
+
+
+
+/* Card central das páginas de recuperação e redefinição de senha */
+.container_login_recover {
+    background: white;
+    width: 420px;
+    max-width: 92vw;
+    height: auto;
+    min-height: 460px;
+    padding: 40px 36px;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+label {
+    display: block;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 20px;
+}
+
+#email {
+    /* O campo de e-mail em recuperar_senha.html usa a classe .reset_input
+       para estilização principal. Este seletor apenas garante compatibilidade. */
+    width: 100%;
+}
+
+#emailError {
+    /* Usa a classe .campo_erro para estilização. Aqui apenas ajustamos a margem. */
+    margin-top: 3px;
+    margin-bottom: 0;
+}
+
+#senhaError{
+    display: none;
+    color: red;
+    font-size: 14px;
+    margin-top: -10px;
+    margin-bottom: 10px;
+}
+
+
+.container_login_recover:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.11);
+}
+
+.header h2 {
+    color: #1a202c;
+    margin-bottom: 8px;
+    font-size: 26px;
+    font-weight: 600;
+}
+
+.icon_recover {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    margin-bottom: 18px;
+}
+
+.txt_descricao {
+    padding: 8px 4px 16px;
+    font-size: 15px;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+/* Botão principal das páginas de recuperação e redefinição de senha */
+.btn_Recover_password {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    margin: 16px 0 0;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.btn_Recover_password:hover:not(:disabled) {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+.btn_Recover_password:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Agrupamento de label + input nos formulários de recuperação */
+.recovery_field {
+    margin-bottom: 12px;
+    text-align: left;
+}
+
+.recovery_field label {
+    display: block;
+    margin-bottom: 6px;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    margin-top: 0;
+}
+
+/* Link de ação secundária (voltar ao login, solicitar novamente) */
+.txt_link_login {
+    margin-top: 18px;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.txt_link_login a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.txt_link_login a:hover {
     text-decoration: underline;
 }
 
@@ -121,6 +283,21 @@ body.dashboard-layout {
 .menu .titulo {
     padding: 30px 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Borboleta Azul (símbolo oficial) no topo do menu lateral */
+.menu .titulo::before {
+    content: "";
+    display: block;
+    width: 45px;
+    height: 45px;
+    margin-bottom: 15px;
+    background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 50 C30 20, 10 30, 15 55 C18 70, 35 75, 50 60" fill="%233b82f6" opacity="0.85"/><path d="M50 50 C25 10, 5 15, 10 45 C13 60, 30 65, 50 55" fill="%2360a5fa" opacity="0.9"/><path d="M50 50 C35 35, 20 40, 22 52 C23 60, 35 62, 50 55" fill="%2393c5fd" opacity="0.95"/><path d="M50 50 C70 20, 90 30, 85 55 C82 70, 65 75, 50 60" fill="%233b82f6" opacity="0.85"/><path d="M50 50 C75 10, 95 15, 90 45 C87 60, 70 65, 50 55" fill="%2360a5fa" opacity="0.9"/><path d="M50 50 C65 35, 80 40, 78 52 C77 60, 65 62, 50 55" fill="%2393c5fd" opacity="0.95"/><path d="M48 25 C48 22, 52 22, 52 25 L51 75 C51 77, 49 77, 49 75 Z" fill="%23ffffff"/><circle cx="50" cy="23" r="3" fill="%23ffffff"/><path d="M49 22 Q43 14 38 16" stroke="%23ffffff" stroke-width="1.5" stroke-linecap="round"/><path d="M51 22 Q57 14 62 16" stroke="%23ffffff" stroke-width="1.5" stroke-linecap="round"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    pointer-events: none; /* Defesa clickjacking */
+    user-select: none;
+    filter: drop-shadow(0px 2px 6px rgba(59, 130, 246, 0.4));
 }
 
 .menu .titulo h3 {
@@ -211,7 +388,7 @@ body.dashboard-layout {
 
 .container_area {
     flex: 1;
-    padding: 30px;
+    padding: clamp(1rem, 3vw, 2rem);
     overflow-y: auto;
     background: #f8fafc;
 }
@@ -279,8 +456,8 @@ body.dashboard-layout {
 
 .acesso_rapido {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
 }
 
 .cadastrar_paciente button,
@@ -312,6 +489,13 @@ body.dashboard-layout {
     color: #1e293b;
     margin-top: 12px;
     font-size: 15px;
+}
+
+/* Container de tabelas responsivas */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Tabelas */
@@ -634,17 +818,180 @@ tbody tr:hover {
 
 /* Responsivo */
 @media (max-width: 768px) {
+    body.dashboard-layout {
+        flex-direction: column;
+        height: auto;
+        overflow: auto;
+    }
+    
     .menu {
-        width: 0;
-        transform: translateX(-100%);
+        width: 100% !important;
+        height: auto !important;
+        position: relative !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: flex-start !important;
+        transform: none !important;
+        padding: 15px !important;
+    }
+    
+    .menu .titulo {
+        padding: 10px 0 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+    
+    .menu .titulo::before {
+        margin-bottom: 0 !important;
+        margin-right: 15px !important;
+        display: inline-block !important;
+        width: 35px !important;
+        height: 35px !important;
+    }
+    
+    .Paginas {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        padding: 15px 0 !important;
+        width: 100% !important;
+        gap: 8px !important;
+        overflow-y: visible !important;
+    }
+    
+    .Paginas button {
+        width: auto !important;
+        flex: 1 1 calc(50% - 8px) !important;
+        padding: 10px 12px !important;
+        font-size: 13px !important;
+        margin-bottom: 0 !important;
+        text-align: center !important;
+    }
+    
+    .Acesso_usuario, .logout {
+        width: 100% !important;
+        padding: 8px 0 !important;
+        border-top: none !important;
+    }
+    
+    .btn-acesso_usuario, .btn-logout {
+        padding: 10px !important;
+        font-size: 13px !important;
     }
     
     .Principal {
-        margin-left: 0;
+        margin-left: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
     }
     
-    .form-row,
-    .score-display {
-        grid-template-columns: 1fr;
+    .container_area {
+        padding: 15px !important;
+        overflow: visible !important;
     }
+    
+    /* Tabelas responsivas */
+    .tabela-pacientes,
+    .tabela-avaliacoes,
+    .tabela-relatorios {
+        width: 100% !important;
+        overflow-x: auto !important;
+        display: block !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .tabela-pacientes table,
+    .tabela-avaliacoes table,
+    .tabela-relatorios table {
+        min-width: 650px !important;
+    }
+    
+    /* Formulários responsivos */
+    .form-container {
+        padding: 20px 15px !important;
+        width: 100% !important;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+    
+    /* Card de login */
+    .container_login {
+        padding: 30px 20px !important;
+        margin: 15px !important;
+        max-width: 90% !important;
+    }
+    
+    .score-display {
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
+    }
+}
+
+/* ============================================================
+   Redefinir Senha — estilos específicos da nova tela
+   ============================================================ */
+
+/* Input de senha (nova senha / confirmar senha) */
+.reset_input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    font-size: 16px;
+    box-sizing: border-box;
+    margin-bottom: 4px;
+}
+
+.reset_input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+/* Indicador de força da senha */
+.forca_container {
+    margin: 6px 0 8px;
+}
+
+.forca_barra {
+    height: 5px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.forca_fill {
+    height: 100%;
+    width: 0;
+    border-radius: 3px;
+    transition: width 0.35s ease, background-color 0.35s ease;
+}
+
+.forca_fraca { background: #ef4444; }
+.forca_media { background: #f59e0b; }
+.forca_forte { background: #10b981; }
+
+.forca_texto {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 3px;
+    text-align: right;
+}
+
+/* Mensagem de erro inline (por campo) */
+.campo_erro {
+    display: none;
+    color: #ef4444;
+    font-size: 13px;
+    margin-top: 3px;
+    font-weight: 400;
 }

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../styles/global.css">
+    <title>Redefinir Senha - Sistema de Triagem Clínica</title>
+</head>
+<body>
+    <div class="container_recovery">
+
+        <!-- Estado 1: Validando token (padrão ao carregar a página) -->
+        <div id="estado_carregando" class="container_login_recover">
+            <div class="header">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none"
+                     xmlns="http://www.w3.org/2000/svg" class="icon_recover" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" fill="#e8edfb" stroke="#667eea" stroke-width="2" opacity="0.7"/>
+                    <path d="M12 6v6l4 2" stroke="#667eea" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <h2>Validando link...</h2>
+                <p class="txt_descricao">Aguarde enquanto verificamos o seu link de recuperação.</p>
+            </div>
+        </div>
+
+        <!-- Estado 2: Token inválido ou expirado -->
+        <div id="estado_erro_token" class="container_login_recover" style="display: none;">
+            <div class="header">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none"
+                     xmlns="http://www.w3.org/2000/svg" class="icon_recover" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+                    <path d="M12 7v6" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/>
+                    <circle cx="12" cy="16.5" r="1" fill="#ef4444"/>
+                </svg>
+                <h2>Link inválido</h2>
+                <p class="txt_descricao" id="msg_erro_token">
+                    Este link de recuperação é inválido ou já expirou.
+                </p>
+            </div>
+            <div class="form_actions" style="margin-top: 10px;">
+                <p class="txt_link_login">
+                    <a href="recuperar_senha.html">Solicitar nova recuperação de senha</a>
+                </p>
+                <p class="txt_link_login" style="margin-top: 8px;">
+                    Lembrou sua senha? <a href="login.html">Fazer Login</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Estado 3: Formulário de redefinição (liberado após token válido) -->
+        <div id="estado_formulario" class="container_login_recover"
+             style="display: none; height: auto; min-height: 500px;">
+            <div class="header">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none"
+                     xmlns="http://www.w3.org/2000/svg" class="icon_recover" aria-hidden="true">
+                    <rect x="3" y="11" width="18" height="11" rx="2" fill="#e8edfb" stroke="#667eea" stroke-width="2"/>
+                    <path d="M7 11V7a5 5 0 0110 0v4" stroke="#667eea" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="12" cy="16" r="1.5" fill="#667eea"/>
+                </svg>
+                <h2>Redefinir Senha</h2>
+                <p class="txt_descricao">Crie uma nova senha para a sua conta.</p>
+            </div>
+
+            <form id="form_redefinir" onsubmit="redefinirSenha(event)" style="text-align: left;">
+
+                <!-- Campo: Nova senha -->
+                <div>
+                    <label for="nova_senha">Nova Senha:</label>
+                    <input type="password" id="nova_senha" name="nova_senha"
+                           class="reset_input" placeholder="••••••••"
+                           required autocomplete="new-password"
+                           aria-describedby="senhaError forca_texto">
+
+                    <!-- Indicador de força da senha -->
+                    <div class="forca_container" aria-live="polite">
+                        <div class="forca_barra">
+                            <div id="forca_fill" class="forca_fill"></div>
+                        </div>
+                        <span id="forca_texto" class="forca_texto"></span>
+                    </div>
+                    <span id="senhaError" class="campo_erro" role="alert"></span>
+                </div>
+
+                <!-- Campo: Confirmar senha -->
+                <div style="margin-top: 4px;">
+                    <label for="confirmar_senha">Confirmar Senha:</label>
+                    <input type="password" id="confirmar_senha" name="confirmar_senha"
+                           class="reset_input" placeholder="••••••••"
+                           required autocomplete="new-password"
+                           aria-describedby="confirmarError">
+                    <span id="confirmarError" class="campo_erro" role="alert"></span>
+                </div>
+
+                <div class="form_actions" style="margin-top: 10px;">
+                    <button class="btn_Recover_password" type="submit" id="btn_redefinir">
+                        Redefinir Senha
+                    </button>
+                    <p class="txt_link_login">
+                        Lembrou sua senha? <a href="login.html">Fazer Login</a>
+                    </p>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Estado 4: Sucesso — senha redefinida com sucesso -->
+        <div id="estado_sucesso" class="container_login_recover" style="display: none;">
+            <div class="header">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none"
+                     xmlns="http://www.w3.org/2000/svg" class="icon_recover" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+                    <path d="M7 12l3.5 3.5L17 8" stroke="#10b981" stroke-width="2.5"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h2>Senha redefinida!</h2>
+                <p class="txt_descricao">
+                    Sua senha foi atualizada com sucesso.<br>
+                    Você será redirecionado para o login em instantes...
+                </p>
+            </div>
+            <div class="form_actions" style="margin-top: 10px;">
+                <p class="txt_link_login">
+                    <a href="login.html" id="link_login_sucesso">Ir para o Login agora</a>
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="../../js/redefinirSenha.js"></script>
+</body>
+</html>

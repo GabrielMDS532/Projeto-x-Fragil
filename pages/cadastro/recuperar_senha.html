@@ -1,23 +1,96 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recuperar Senha</title>
+    <link rel="stylesheet" href="../../styles/global.css">
+    <title>Recuperar Senha - Sistema de Triagem Clínica</title>
+    <meta name="description" content="Recupere o acesso à sua conta do Sistema de Triagem Clínica.">
 </head>
 <body>
-    <div class="principal">
-        <div class="container_recuperar_senha">
-            <h2>Recuperar Senha</h2>
-            <form>
-                <label for="email">Digite seu email para recuperar a senha:</label>
-                <input type="email" id="email" name="email" required><br><br>
+    <div class="container_recovery">
 
-                <button type="submit">Enviar Link de Recuperação</button>
-                <p>Voltar para <a href="login.html">Login</a></p>
+        <!-- Estado 1: Formulário de recuperação (exibido por padrão) -->
+        <div id="estado_formulario" class="container_login_recover">
+            <div class="header">
+                <!-- Ícone: envelope com indicador de envio -->
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+                     xmlns="http://www.w3.org/2000/svg" class="icon_recover" aria-hidden="true">
+                    <rect x="2" y="6" width="20" height="13" rx="2.5"
+                          fill="#e8edfb" stroke="#667eea" stroke-width="1.8"/>
+                    <path d="M2 10l10 6 10-6"
+                          stroke="#667eea" stroke-width="1.8" stroke-linecap="round"/>
+                    <circle cx="19" cy="5.5" r="3.5" fill="#667eea"/>
+                    <path d="M17.7 5.5h2.6M19 4.2v2.6"
+                          stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+
+                <h2>Recuperar Senha</h2>
+                <p class="txt_descricao">
+                    Informe o e-mail cadastrado e enviaremos
+                    as instruções para criar uma nova senha.
+                </p>
+            </div>
+
+            <form id="form_recuperar" onsubmit="recoverPassword(event)">
+
+                <div class="recovery_field">
+                    <label for="email">E-mail:</label>
+                    <input type="email" id="email" name="email"
+                           class="reset_input" placeholder="seu@email.com"
+                           required autocomplete="email"
+                           aria-describedby="emailError">
+                    <span id="emailError" class="campo_erro" role="alert">
+                        Por favor, insira um e-mail válido.
+                    </span>
+                </div>
+
+                <button id="btn_recuperar" class="btn_Recover_password" type="submit">
+                    Enviar Link de Recuperação
+                </button>
+
+                <!-- Mensagem de erro de conexão com o servidor -->
+                <span id="erroConexao" class="campo_erro"
+                      style="display:none; text-align:center; margin-top:12px;"></span>
+
+                <p class="txt_link_login">
+                    Lembrou sua senha? <a href="login.html">Fazer Login</a>
+                </p>
             </form>
         </div>
+
+        <!-- Estado 2: Link enviado com sucesso -->
+        <div id="estado_sucesso" class="container_login_recover" style="display: none;">
+            <div class="header">
+                <!-- Ícone: envelope com confirmação verde -->
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+                     xmlns="http://www.w3.org/2000/svg" class="icon_recover" aria-hidden="true">
+                    <rect x="2" y="6" width="20" height="13" rx="2.5"
+                          fill="#e8edfb" stroke="#667eea" stroke-width="1.8"/>
+                    <path d="M2 10l10 6 10-6"
+                          stroke="#667eea" stroke-width="1.8" stroke-linecap="round"/>
+                    <circle cx="19" cy="5.5" r="3.5" fill="#10b981"/>
+                    <path d="M17.2 5.5l1.3 1.4 2.3-2.8"
+                          stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+
+                <h2>E-mail enviado!</h2>
+                <p class="txt_descricao">
+                    Se o e-mail estiver cadastrado, enviaremos as instruções
+                    para criar uma nova senha.<br><br>
+                    Verifique sua caixa de entrada e a pasta de spam.
+                </p>
+            </div>
+
+            <p class="txt_link_login" style="margin-top: 24px;">
+                <a href="recuperar_senha.html">Solicitar novamente</a>
+                &nbsp;·&nbsp;
+                <a href="login.html">Voltar ao Login</a>
+            </p>
+        </div>
+
     </div>
+
+    <script src="../../js/recuperarSenha.js"></script>
 </body>
 </html>

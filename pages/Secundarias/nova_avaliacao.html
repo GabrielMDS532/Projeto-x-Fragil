@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../styles/global.css">
+    <title>Nova Avaliação - Sistema de Triagem Clínica</title>
+</head>
+<body class="dashboard-layout">
+
+    <!-- Menu -->
+    <div class="menu">
+        <div class="titulo">
+            <h3>Sistema de Triagem Clínica</h3>
+            <p>MVP</p>
+        </div>
+        <div class="Paginas">
+            <button onclick="navigate('../Principais/dashboard.html')">📊 Dashboard</button>
+            <button onclick="navigate('../Principais/pacientes.html')">👥 Pacientes</button>
+            <button class="active" onclick="navigate('nova_avaliacao.html')">📋 Nova Avaliação</button>
+            <button onclick="navigate('../Principais/relatorios.html')">📄 Relatórios</button>
+            <button onclick="navigate('../Principais/usuarios.html')" id="btnUsuarios">⚙️ Usuários</button>
+        </div>
+        <div class="Acesso_usuario">
+            <button class="btn-acesso_usuario" id="userInfo">👤 Usuário</button>
+        </div>
+        <div class="logout">
+            <button class="btn-logout" onclick="logout()">🚪 Sair</button>
+        </div>
+    </div>
+
+    <!-- Principal -->
+    <div class="Principal">
+        <div class="container_area">
+            
+            <div class="Mensagem_entrada">
+                <div>
+                    <button class="btn-secondary" onclick="navigate('../Principais/pacientes.html')" style="margin-right: 15px;">← Voltar</button>
+                    <h4 style="display: inline;">Nova Avaliação Clínica</h4>
+                </div>
+            </div>
+
+            <!-- Informações do Paciente -->
+            <div class="form-container mb-20">
+                <h4>Informações do Paciente</h4>
+                <div class="form-group" style="margin-top: 20px;">
+                    <label>Selecionar Paciente</label>
+                    <select id="selectPatient">
+                        <option value="">Carregando pacientes...</option>
+                    </select>
+                </div>
+
+                <div id="patientInfo" class="info-paciente-box hidden" style="margin-top: 20px;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                        <div>
+                            <p style="color: #64748b; font-size: 14px;">Nome:</p>
+                            <p id="patientName" style="font-weight: 600; color: #1e293b;"></p>
+                        </div>
+                        <div>
+                            <p style="color: #64748b; font-size: 14px;">Sexo:</p>
+                            <p id="patientSex" style="font-weight: 600; color: #1e293b;"></p>
+                        </div>
+                        <div>
+                            <p style="color: #64748b; font-size: 14px;">Idade:</p>
+                            <p id="patientAge" style="font-weight: 600; color: #1e293b;"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Checklist -->
+            <div class="checklist_avaliacao">
+                <h4>Checklist Clínico</h4>
+                <p style="color: #64748b; margin-bottom: 20px;">Marque os sintomas e características observadas no paciente:</p>
+
+                <ul style="padding: 0;">
+                    <li>
+                        <input type="checkbox" id="s1" data-weight="0.15">
+                        <label for="s1">Deficiência intelectual</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="s2" data-weight="0.10">
+                        <label for="s2">Face alongada/orelhas de abano</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="s3" data-weight="0.12">
+                        <label for="s3">Macroorquidismo</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="s4" data-weight="0.08">
+                        <label for="s4">Hipermobilidade articular</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="s5" data-weight="0.10">
+                        <label for="s5">Dificuldades de aprendizagem</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="s6" data-weight="0.09">
+                        <label for="s6">Déficit de atenção</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="s7" data-weight="0.08">
+                        <label for="s7">Movimentos repetitivos</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="s8" data-weight="0.10">
+                        <label for="s8">Atraso na fala</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="s9" data-weight="0.07">
+                        <label for="s9">Hiperatividade</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="s10" data-weight="0.06">
+                        <label for="s10">Evita contato visual</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="s11" data-weight="0.06">
+                        <label for="s11">Evita contato físico</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="s12" data-weight="0.05">
+                        <label for="s12">Agressividade</label>
+                    </li>
+                </ul>
+
+                <div style="margin-top: 30px;">
+                    <button class="btn-primary" onclick="calculateScore()">Calcular Resultado</button>
+                    <button class="btn-secondary" onclick="clearChecklist()">Limpar Checklist</button>
+                    <button class="btn-secondary" onclick="navigate('../Principais/pacientes.html')">Cancelar</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="../../js/storage.js"></script>
+    <script src="../../js/nova_avaliacao.js"></script>
+</body>
+</html>

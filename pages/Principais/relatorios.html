@@ -1,82 +1,172 @@
 <!DOCTYPE html>
-<html lang="Pt-BR">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatórios</title>
+    <link rel="stylesheet" href="../../styles/global.css">
+    <title>Relatórios - Sistema de Triagem Clínica</title>
 </head>
-<body>
+<body class="dashboard-layout">
 
-    <!-- Menu Lateral !-->
+    <!-- Menu -->
     <div class="menu">
         <div class="titulo">
             <h3>Sistema de Triagem Clínica</h3>
+            <p>MVP</p>
         </div>
-        <!-- Botões de paginas do menu !-->
-        <div class="Paginas"> 
-            <button class="btn-dashboard">Dashboard</button>
-            <button class="btn-pacientes">Pacientes</button>
-            <button class="btn-avaliacoes">Avaliações</button>
-            <button class="btn-relatorios">Relatórios</button>
-            <button class="btn-usuarios">Usuários</button>
+        <div class="Paginas">
+            <button onclick="navigate('dashboard.html')">📊 Dashboard</button>
+            <button onclick="navigate('pacientes.html')">👥 Pacientes</button>
+            <button onclick="navigate('../Secundarias/nova_avaliacao.html')">📋 Nova Avaliação</button>
+            <button class="active" onclick="navigate('relatorios.html')">📄 Relatórios</button>
+            <button onclick="navigate('usuarios.html')" id="btnUsuarios">⚙️ Usuários</button>
         </div>
-        
-        <!--Acesso Usuario Cabeçalho -->
-        <div class="Acesso_usuario"> 
-            <div class="botao_acesso_usuario">
-            <button class="btn-acesso_usuario">Icone</button>
-            </div>
+        <div class="Acesso_usuario">
+            <button class="btn-acesso_usuario" id="userInfo">👤 Usuário</button>
         </div>
-
-        <!-- Botão de Logout !-->
-        <div class="logout">  
-            <button class="btn-logout">Logout</button>
+        <div class="logout">
+            <button class="btn-logout" onclick="logout()">🚪 Sair</button>
         </div>
     </div>
 
-    <div class ="Pricipal"> 
+    <!-- Principal -->
+    <div class="Principal">
         <div class="container_area">
-
+            
             <div class="Mensagem_entrada">
-                <h3>Relatórios</h3>
-                <button class="btn-gerar_relatorio">Exportar Relatório</button>
-            </div>  
-
-        <div class="filtros_relatorios">
-
-            <!-- filtrar Pesquisa de Relatórios !-->
-            <div class = container_filtros>
-
-                <div class="filtro_data_incio">
-                <label for="data_inicio">Data Início:</label>
-                <input type="date" id="data_inicio" name="data_inicio">
+                <h4>Relatórios</h4>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary" onclick="exportReport()">📥 Exportar PDF</button>
+                    <button class="btn-primary" onclick="exportarCSV()" id="btnExportarCSV" style="background-color: #059669; border-color: #059669;">📊 Exportar CSV</button>
                 </div>
+            </div>
 
-                <div class="filtro_data_fim">
-                <label for="data_fim">Data Fim:</label>
-                <input type="date" id="data_fim" name="data_fim">
+            <!-- Filtros -->
+            <div class="filtros-container">
+                <h4 style="margin-bottom: 15px;">Filtros</h4>
+                <div class="filtros-grid">
+                    <div class="form-group">
+                        <label>Data Inicial</label>
+                        <input type="date" id="dataInicial">
+                    </div>
+                    <div class="form-group">
+                        <label>Data Final</label>
+                        <input type="date" id="dataFinal">
+                    </div>
+                    <div class="form-group">
+                        <label>Usuário</label>
+                        <select id="filterUser">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Paciente</label>
+                        <select id="filterPatient">
+                            <option value="todos">Todos</option>
+                            <option value="joao">João Silva</option>
+                            <option value="maria">Maria Santos</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Resultado</label>
+                        <select id="filterResult">
+                            <option value="todos">Todos</option>
+                            <option value="encaminhamento">Encaminhamento</option>
+                            <option value="normal">Normal</option>
+                        </select>
+                    </div>
                 </div>
+                <button id="btnFiltrar" class="btn-primary mt-20">🔍 Filtrar</button>
+            </div>
 
-                <div class="filtro_usuario">
-                    <label for="usuario">Usuário:</label>
-                    <input type="text" id="usuario" name="usuario">
+            <!-- Tabela de Resultados -->
+            <div class="tabela-relatorios">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Paciente</th>
+                                <th>Usuário</th>
+                                <th>Score</th>
+                                <th>Resultado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsTableBody">
+                            <!-- Renderizado dinamicamente pelo JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
-
-                <div class = "filtro_paciente">
-                    <label for="paciente">Paciente:</label>
-                    <input type="text" id="paciente" name="paciente">
-                </div>
-
-                <div class="Resultado"></div>
-                <label for="resultado">Resultado:</label>
-                <select id="resultado" name="resultado">
-                    <option value="todos_resultados">Todos</option>
-                    <option value="Encaminhamento">Encaminhamento</option>
-                    <option value="Normal">Normal</option>
-                </select>
-                </div>
-
             </div>
 
         </div>
+    </div>
+
+    <!-- Biblioteca html2pdf.js local (compatível com helmet CSP) -->
+    <script src="../../js/lib/html2pdf.bundle.min.js"></script>
+    <script src="../../js/storage.js"></script>
+    <script src="../../js/relatorios.js"></script>
+
+    <!-- Contêiner do Relatório Consolidado Oculto na tela, usado apenas para geração do PDF -->
+    <div id="relatorioConsolidadoPDF" style="display: none; font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #1e293b; background-color: #ffffff; max-width: 800px; margin: 0 auto; line-height: 1.5;">
+        <!-- Cabeçalho Timbrado -->
+        <div style="border-bottom: 3px solid #8b5cf6; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 style="font-size: 22px; color: #5b21b6; margin: 0; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Centro de Diagnóstico e Triagem Clínica</h1>
+                <p style="font-size: 12px; color: #64748b; margin: 5px 0 0 0;">Relatório Consolidado de Triagens Clínicas da Síndrome do X-Frágil</p>
+            </div>
+            <div style="text-align: right;">
+                <span style="background-color: #f5f3ff; color: #5b21b6; border: 1px solid #ddd6fe; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase;">Exportação Geral</span>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; font-size: 13px; color: #475569; margin-bottom: 30px; padding: 15px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <div>
+                <p style="margin: 0 0 5px 0;"><strong>Profissional Emissor:</strong> <span id="pdfRepProfessionalName">-</span></p>
+                <p style="margin: 0;"><strong>Data de Emissão:</strong> <span id="pdfRepEvaluationDate">-</span></p>
+            </div>
+            <div style="text-align: right;">
+                <p style="margin: 0 0 5px 0;"><strong>Registros Exportados:</strong> <span id="pdfRepTotalExames">0</span></p>
+                <p style="margin: 0;"><strong>Média Geral de Scores:</strong> <span id="pdfRepMediaScore">0.00</span></p>
+            </div>
+        </div>
+
+        <h2 style="font-size: 16px; color: #5b21b6; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 15px; font-weight: 600;">1. RESUMO ESTATÍSTICO DO PERÍODO</h2>
+        
+        <div style="display: flex; gap: 20px; margin-bottom: 35px;">
+            <div style="flex: 1; background-color: #fee2e2; border: 1px solid #fca5a5; border-radius: 8px; padding: 12px; text-align: center; color: #991b1b;">
+                <h4 style="margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; font-weight: 600; color: #b91c1c;">Encaminhamentos Recomendados</h4>
+                <div style="font-size: 26px; font-weight: 700;" id="pdfRepTotalRecomendados">0</div>
+                <div style="font-size: 11px; font-weight: 500; margin-top: 2px;" id="pdfRepPctRecomendados">0% do total</div>
+            </div>
+            <div style="flex: 1; background-color: #d1fae5; border: 1px solid #6ee7b7; border-radius: 8px; padding: 12px; text-align: center; color: #065f46;">
+                <h4 style="margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; font-weight: 600; color: #047857;">Acompanhamentos de Rotina</h4>
+                <div style="font-size: 26px; font-weight: 700;" id="pdfRepTotalNormais">0</div>
+                <div style="font-size: 11px; font-weight: 500; margin-top: 2px;" id="pdfRepPctNormais">0% do total</div>
+            </div>
+        </div>
+
+        <h2 style="font-size: 16px; color: #5b21b6; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 15px; font-weight: 600;">2. LISTAGEM DETALHADA DAS TRIAGENS</h2>
+        
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; margin-bottom: 40px;">
+            <thead>
+                <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
+                    <th style="padding: 10px; font-weight: 600; color: #475569; width: 22%;">Data</th>
+                    <th style="padding: 10px; font-weight: 600; color: #475569; width: 28%;">Paciente</th>
+                    <th style="padding: 10px; font-weight: 600; color: #475569; width: 28%;">Profissional</th>
+                    <th style="padding: 10px; font-weight: 600; color: #475569; width: 10%; text-align: center;">Score</th>
+                    <th style="padding: 10px; font-weight: 600; color: #475569; width: 12%; text-align: center;">Resultado</th>
+                </tr>
+            </thead>
+            <tbody id="pdfRepTableBody">
+                <!-- Preenchido dinamicamente pelo JS antes de gerar o PDF -->
+            </tbody>
+        </table>
+
+        <!-- Rodapé do PDF -->
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 40px; text-align: center; font-size: 10px; color: #94a3b8;">
+            Relatório de auditoria consolidado gerado eletronicamente em conformidade com as diretrizes de triagem STC-MVP. Chave de exportação auditada em banco de dados real MySQL.
+        </div>
+    </div>
 </body>
+</html>
