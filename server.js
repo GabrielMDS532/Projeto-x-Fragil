@@ -217,6 +217,7 @@ async function getEmailTransporter() {
         host: host,
         port: port,
         secure: port === 465, // secure: true para a porta 465, false para outras portas (como 587/25)
+        family: 4,
         auth: {
             user: user,
             pass: pass
