@@ -6,7 +6,7 @@ import mysql from 'mysql2';
 import cors from 'cors';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -202,31 +202,8 @@ app.use('/api', (req, res, next) => {
     return autenticarToken(req, res, next);
 });
 
-// --- Serviço de E-mail: Nodemailer com SMTP Real (configurado via .env) ---
-let _emailTransporter = null;
-
-async function getEmailTransporter() {
-    if (_emailTransporter) return _emailTransporter;
-
-    const host = process.env.SMTP_HOST;
-    const port = parseInt(process.env.SMTP_PORT || '587');
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASS;
-
-    _emailTransporter = nodemailer.createTransport({
-        host: host,
-        port: port,
-        secure: port === 465, // secure: true para a porta 465, false para outras portas (como 587/25)
-        family: 4,
-        auth: {
-            user: user,
-            pass: pass
-        }
-    });
-
-    console.log('\n📧 Transportador de E-mail SMTP configurado a partir do .env!');
-    return _emailTransporter;
-}
+// --- Serviço de E-mail: Resend SDK ---
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // --- Rota de Login com Migração Suave para bcrypt ---
 // Se a senha no banco for texto puro e bater, permite login e migra para hash.
@@ -939,16 +916,15 @@ app.post('/api/recuperar-senha', (req, res) => {
 </html>`;
 
                     try {
-                        const transporter = await getEmailTransporter();
-                        const info = await transporter.sendMail({
-                            from: process.env.SMTP_USER ? `"Sistema de Triagem Clínica" <${process.env.SMTP_USER}>` : '"Sistema de Triagem Clínica" <noreply@triagem.com>',
+                        const info = await resend.emails.send({
+                            from: 'onboarding@resend.dev',
                             to: email,
                             subject: 'Recuperação de Senha — Sistema de Triagem Clínica',
                             html: htmlEmail
                         });
-                        console.log('✅ E-mail de recuperação enviado com sucesso!');
+                        console.log('✅ E-mail de recuperação enviado via Resend com sucesso!', info);
                     } catch (errEmail) {
-                        console.error("Erro ao enviar e-mail de recuperação:", errEmail);
+                        console.error("Erro ao enviar e-mail de recuperação via Resend:", errEmail);
                     }
                 }
             );
