@@ -90,7 +90,7 @@ const storage = multer.diskStorage({
 const fileFilter = (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     const mime = file.mimetype;
-    
+
     const allowedExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
     const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
 
@@ -115,13 +115,18 @@ const upload = multer({
 const FRONTEND_BASE_URL = 'http://localhost:3000';
 
 // Pool de conexões MySQL (evita ECONNRESET por timeout de conexão única)
+// Pool de conexões MySQL (evita ECONNRESET por timeout de conexão única)
 const db = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
+    password: process.env.DB_PASS || '',         // <-- Ajustado para DB_PASS
     database: process.env.DB_NAME || 'x_fragil',
+    port: process.env.DB_PORT || 3306,           // <-- Porta adicionada!
+    ssl: {                                       // <-- Segurança SSL adicionada!
+        rejectUnauthorized: false
+    },
     connectionLimit: 10,
-    waitForConnections: true,
+    waitForConnections: true
 });
 
 db.getConnection((err, connection) => {
