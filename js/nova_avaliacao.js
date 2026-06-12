@@ -81,7 +81,7 @@ function inicializarNovaAvaliacao() {
 async function buscarPacientesParaSelect() {
     try {
         // Faz a requisição real para o backend MySQL
-        const resposta = await fetch('http://localhost:3000/api/pacientes', { credentials: 'include' });
+        const resposta = await fetch('/api/pacientes', { credentials: 'include' });
         const dados = await resposta.json();
 
         if (dados.sucesso) {

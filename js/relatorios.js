@@ -57,7 +57,7 @@ async function inicializarRelatorios() {
 
 async function carregarFiltroUsuarios() {
     try {
-        const resposta = await fetch('http://localhost:3000/api/usuarios');
+        const resposta = await fetch('/api/usuarios', { credentials: 'include' });
         const dados = await resposta.json();
 
         if (dados.sucesso) {
@@ -84,7 +84,7 @@ async function carregarFiltroUsuarios() {
 async function prepararFiltrosECarregar() {
     try {
         // Preenche o select de pacientes com dados reais do banco
-        const resposta = await fetch('http://localhost:3000/api/pacientes', { credentials: 'include' });
+        const resposta = await fetch('/api/pacientes', { credentials: 'include' });
         const dados = await resposta.json();
 
         if (dados.sucesso) {
@@ -134,7 +134,7 @@ async function carregarRelatorios() {
         idPaciente = idPacienteURL;
     }
 
-    let url = 'http://localhost:3000/api/relatorios';
+    let url = '/api/relatorios';
     const params = new URLSearchParams();
 
     if (idPaciente && idPaciente !== 'todos') {
@@ -442,7 +442,7 @@ async function deletarRelatorio(id) {
     if (!confirm('Deseja realmente remover este relatório? Esta ação apagará permanentemente o registro de triagem do banco de dados.')) return;
 
     try {
-        const resposta = await fetch(`http://localhost:3000/api/relatorios/${id}`, {
+        const resposta = await fetch(`/api/relatorios/${id}`, {
             method: 'DELETE',
             credentials: 'include',
         });

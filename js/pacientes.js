@@ -53,7 +53,7 @@ async function carregarPacientes() {
     const sexo = selectSexo ? selectSexo.value : 'todos';
 
     // Construção segura dos parâmetros de busca
-    let url = 'http://localhost:3000/api/pacientes';
+    let url = '/api/pacientes';
     const params = new URLSearchParams();
     if (cpf) params.append('cpf', cpf);
     if (sexo && sexo !== 'todos') params.append('sexo', sexo);
@@ -209,7 +209,7 @@ async function excluirPaciente(id) {
     if (!confirm('Deseja realmente remover este paciente? Esta ação é irreversível.')) return;
 
     try {
-        const resposta = await fetch(`http://localhost:3000/api/pacientes/${id}`, {
+        const resposta = await fetch(`/api/pacientes/${id}`, {
             method: 'DELETE',
             credentials: 'include',
         });

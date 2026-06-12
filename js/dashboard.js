@@ -47,7 +47,7 @@ function configurarNivelAcesso(isAdmin) {
 
 async function carregarDadosDashboard() {
     try {
-        const resposta = await fetch('http://localhost:3000/api/dashboard/stats', { credentials: 'include' });
+        const resposta = await fetch('/api/dashboard/stats', { credentials: 'include' });
         const dados = await resposta.json();
 
         if (dados.sucesso) {

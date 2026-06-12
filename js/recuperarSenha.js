@@ -2,7 +2,7 @@
 // Conecta o formulário de recuperação de senha à API do backend.
 // Gerencia dois estados visuais: formulário e sucesso.
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = '';
 
 // Estados visuais
 const estadoFormulario = document.getElementById('estado_formulario');
@@ -56,7 +56,7 @@ async function recoverPassword(event) {
 
     } catch (erro) {
         console.error('Erro ao contactar o servidor:', erro);
-        erroConexao.textContent   = 'Erro ao conectar com o servidor. Verifique se o Node.js está rodando na porta 3000.';
+        erroConexao.textContent   = 'Erro ao conectar com o servidor. Verifique a sua conexão ou tente novamente.';
         erroConexao.style.display = 'block';
 
         btnRecuperar.disabled    = false;

@@ -5,7 +5,7 @@
 // 3. Libera o formulário se válido
 // 4. Processa o submit e redireciona para login em caso de sucesso
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = '';
 
 // Lê o token da URL sem exibi-lo na tela
 const params = new URLSearchParams(window.location.search);
@@ -83,7 +83,7 @@ async function inicializar() {
         console.error('Erro ao validar token:', erro);
         mostrarErroToken(
             'Não foi possível verificar o link. ' +
-            'Verifique se o servidor Node.js está rodando na porta 3000.'
+            'Verifique sua conexão ou tente novamente.'
         );
     }
 }
@@ -195,7 +195,7 @@ async function redefinirSenha(event) {
 
     } catch (erro) {
         console.error('Erro ao redefinir senha:', erro);
-        senhaError.textContent   = 'Erro ao conectar com o servidor. Verifique se o Node.js está rodando na porta 3000.';
+        senhaError.textContent   = 'Erro ao conectar com o servidor. Verifique sua conexão ou tente novamente.';
         senhaError.style.display = 'block';
         btnRedefinir.disabled    = false;
         btnRedefinir.textContent = 'Redefinir Senha';

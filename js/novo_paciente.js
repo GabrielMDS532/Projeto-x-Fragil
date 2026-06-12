@@ -167,7 +167,7 @@ function removerFotoSelecionada() {
 // Função para buscar dados do paciente para edição
 async function carregarDadosPacienteEdicao(id) {
     try {
-        const resposta = await fetch(`http://localhost:3000/api/pacientes/${id}`, { credentials: 'include' });
+        const resposta = await fetch(`/api/pacientes/${id}`, { credentials: 'include' });
         const dados = await resposta.json();
 
         if (dados.sucesso) {
@@ -200,7 +200,7 @@ async function carregarDadosPacienteEdicao(id) {
                 const placeholder = document.getElementById('preview-placeholder');
                 const btnRemover = document.getElementById('btn-remover-foto');
                 if (imgPreview && placeholder) {
-                    imgPreview.src = `http://localhost:3000${paciente.foto_paciente}`;
+                    imgPreview.src = paciente.foto_paciente;
                     imgPreview.style.display = 'block';
                     placeholder.style.display = 'none';
                     if (btnRemover) btnRemover.style.display = 'flex';
@@ -269,8 +269,8 @@ async function salvarPaciente(event) {
     formData.append('remover_foto', removerFotoFlag ? 'true' : 'false');
 
     const url = idPaciente 
-        ? `http://localhost:3000/api/pacientes/${idPaciente}`
-        : 'http://localhost:3000/api/pacientes';
+        ? `/api/pacientes/${idPaciente}`
+        : '/api/pacientes';
 
     const metodo = idPaciente ? 'PUT' : 'POST';
 

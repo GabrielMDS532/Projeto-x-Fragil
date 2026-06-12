@@ -39,7 +39,7 @@ function inicializarUsuarios() {
 
 async function carregarUsuarios() {
     try {
-        const resposta = await fetch('http://localhost:3000/api/usuarios', { credentials: 'include' });
+        const resposta = await fetch('/api/usuarios', { credentials: 'include' });
         const dados = await resposta.json();
 
         if (dados.sucesso) {
@@ -137,7 +137,7 @@ async function saveUser(event) {
     };
 
     try {
-        const resposta = await fetch('http://localhost:3000/api/usuarios', {
+        const resposta = await fetch('/api/usuarios', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -178,7 +178,7 @@ async function removerUsuario(id) {
     if (!confirm('Tem certeza de que deseja remover este profissional do sistema?')) return;
 
     try {
-        const resposta = await fetch(`http://localhost:3000/api/usuarios/${id}`, {
+        const resposta = await fetch(`/api/usuarios/${id}`, {
             method: 'DELETE',
             credentials: 'include',
         });

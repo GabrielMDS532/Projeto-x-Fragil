@@ -111,7 +111,7 @@ async function inicializarResultado() {
 
     // Faz busca real no banco de dados do MySQL para obter CPF e Responsável para o laudo
     try {
-        const resposta = await fetch(`http://localhost:3000/api/pacientes/${dadosTriagem.id_paciente}`, { credentials: 'include' });
+        const resposta = await fetch(`/api/pacientes/${dadosTriagem.id_paciente}`, { credentials: 'include' });
         const dados = await resposta.json();
         if (dados.sucesso && dados.paciente) {
             preencherLaudoPDF(dados.paciente);
@@ -152,7 +152,7 @@ async function saveEvaluation() {
 
     try {
         // Envia requisição real ao servidor backend
-        const resposta = await fetch('http://localhost:3000/api/relatorios', {
+        const resposta = await fetch('/api/relatorios', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
