@@ -4,11 +4,6 @@
  * =========================================================================
  */
 function verificarAutenticacao() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (!isLoggedIn || isLoggedIn !== 'true') {
-        window.location.href = '../cadastro/login.html';
-        return false;
-    }
     return true;
 }
 
@@ -68,7 +63,7 @@ async function carregarPacientes() {
     }
 
     try {
-        const resposta = await fetch(url);
+        const resposta = await fetch(url, { credentials: 'include' });
         const dados = await resposta.json();
 
         if (dados.sucesso) {
@@ -215,7 +210,8 @@ async function excluirPaciente(id) {
 
     try {
         const resposta = await fetch(`http://localhost:3000/api/pacientes/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            credentials: 'include',
         });
         const dados = await resposta.json();
 
@@ -271,13 +267,7 @@ function navigate(page) {
 }
 
 function logout() {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('isAdmin');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userDisplayName');
-
-    window.location.href = '../cadastro/login.html';
+    encerrarSessao('../cadastro/login.html');
 }
 
 // Dispara o gatilho inicial ao carregar o DOM

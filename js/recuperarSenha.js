@@ -44,6 +44,7 @@ async function recoverPassword(event) {
         const resposta = await fetch(`${API_BASE}/api/recuperar-senha`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ email })
         });
 

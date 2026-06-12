@@ -4,11 +4,6 @@
  * =========================================================================
  */
 function verificarAutenticacao() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (!isLoggedIn || isLoggedIn !== 'true') {
-        window.location.href = '../cadastro/login.html';
-        return false;
-    }
     return true;
 }
 
@@ -116,7 +111,7 @@ async function inicializarResultado() {
 
     // Faz busca real no banco de dados do MySQL para obter CPF e Responsável para o laudo
     try {
-        const resposta = await fetch(`http://localhost:3000/api/pacientes/${dadosTriagem.id_paciente}`);
+        const resposta = await fetch(`http://localhost:3000/api/pacientes/${dadosTriagem.id_paciente}`, { credentials: 'include' });
         const dados = await resposta.json();
         if (dados.sucesso && dados.paciente) {
             preencherLaudoPDF(dados.paciente);
@@ -162,6 +157,7 @@ async function saveEvaluation() {
             headers: {
                 'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify(dadosRelatorioDB)
         });
 
@@ -275,14 +271,7 @@ function navigate(page) {
 }
 
 function logout() {
-    // Remoção estrita das chaves de sessão sem apagar os bancos de dados simulados!
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('isAdmin');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userDisplayName');
-
-    window.location.href = '../cadastro/login.html';
+    encerrarSessao('../cadastro/login.html');
 }
 
 // Inicializa a página ao carregar o DOM

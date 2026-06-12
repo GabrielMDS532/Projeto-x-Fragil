@@ -4,11 +4,6 @@
  * =========================================================================
  */
 function verificarAutenticacao() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (!isLoggedIn || isLoggedIn !== 'true') {
-        window.location.href = '../cadastro/login.html';
-        return false;
-    }
     return true;
 }
 
@@ -172,7 +167,7 @@ function removerFotoSelecionada() {
 // Função para buscar dados do paciente para edição
 async function carregarDadosPacienteEdicao(id) {
     try {
-        const resposta = await fetch(`http://localhost:3000/api/pacientes/${id}`);
+        const resposta = await fetch(`http://localhost:3000/api/pacientes/${id}`, { credentials: 'include' });
         const dados = await resposta.json();
 
         if (dados.sucesso) {
@@ -282,7 +277,8 @@ async function salvarPaciente(event) {
     try {
         const resposta = await fetch(url, {
             method: metodo,
-            body: formData
+            body: formData,
+            credentials: 'include',
         });
 
         const dados = await resposta.json();
@@ -311,13 +307,7 @@ function navigate(page) {
 }
 
 function logout() {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('isAdmin');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userDisplayName');
-
-    window.location.href = '../cadastro/login.html';
+    encerrarSessao('../cadastro/login.html');
 }
 
 // Dispara o gatilho inicial ao carregar a página

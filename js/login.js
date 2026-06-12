@@ -37,6 +37,7 @@ async function getLogin(event) {
             headers: {
                 'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify({ email: email, senha: senha })
         });
 
