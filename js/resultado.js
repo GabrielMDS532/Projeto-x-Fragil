@@ -132,8 +132,10 @@ async function saveEvaluation() {
     // Recupera o ID do profissional logado
     let userId = localStorage.getItem('userId');
     if (!userId) {
-        console.warn("userId não encontrado no localStorage. Usando id_usuario = 1 como fallback temporário.");
-        userId = "1";
+        console.error("Erro: userId não encontrado no localStorage.");
+        alert('Sessão inválida ou expirada.');
+        window.location.href = '../cadastro/login.html';
+        return;
     }
 
     // Conversão de escala do score para bater com INT no SQL v2 (escala 0-100)

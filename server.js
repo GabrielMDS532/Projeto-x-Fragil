@@ -49,7 +49,8 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+            "script-src-attr": ["'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "blob:"],
             connectSrc: ["'self'"],
@@ -115,7 +116,7 @@ const upload = multer({
 
 // URL base do frontend usada nos links dos e-mails de recuperação.
 // Ajuste para a URL correta ao hospedar em produção.
-const FRONTEND_BASE_URL = 'http://localhost:3000';
+const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || 'http://localhost:3000';
 
 // Pool de conexões MySQL (evita ECONNRESET por timeout de conexão única)
 // Pool de conexões MySQL (evita ECONNRESET por timeout de conexão única)
