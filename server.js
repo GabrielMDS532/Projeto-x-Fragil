@@ -310,7 +310,7 @@ app.post('/api/logout', (req, res) => {
     res.json({ sucesso: true, mensagem: 'Logout realizado.' });
 });
 
-app.get('/api/sessao', (req, res) => {
+app.get('/api/sessao', autenticarToken, (req, res) => {
     res.json({
         sucesso: true,
         usuario: {
@@ -320,7 +320,7 @@ app.get('/api/sessao', (req, res) => {
     });
 });
 // Rota para cadastrar novo paciente
-app.post('/api/pacientes', (req, res) => {
+app.post('/api/pacientes', autenticarToken, (req, res) => {
     upload.single('foto_paciente')(req, res, function (err) {
         if (err instanceof multer.MulterError) {
             if (err.code === 'LIMIT_FILE_SIZE') {
@@ -396,7 +396,7 @@ app.post('/api/pacientes', (req, res) => {
 });
 
 // Rota para listar todos os pacientes com filtros dinâmicos
-app.get('/api/pacientes', (req, res) => {
+app.get('/api/pacientes', autenticarToken, (req, res) => {
     const { cpf, sexo } = req.query;
 
     let sql = "SELECT * FROM paciente";
@@ -436,7 +436,7 @@ app.get('/api/pacientes', (req, res) => {
 });
 
 // Rota para buscar um paciente específico por ID
-app.get('/api/pacientes/:id', (req, res) => {
+app.get('/api/pacientes/:id', autenticarToken, (req, res) => {
     const { id } = req.params;
     const sql = "SELECT * FROM paciente WHERE id_paciente = ?";
 
@@ -458,7 +458,7 @@ app.get('/api/pacientes/:id', (req, res) => {
 });
 
 // Rota para atualizar os dados de um paciente existente
-app.put('/api/pacientes/:id', (req, res) => {
+app.put('/api/pacientes/:id', autenticarToken, (req, res) => {
     const { id } = req.params;
 
     upload.single('foto_paciente')(req, res, function (err) {
@@ -576,7 +576,7 @@ app.put('/api/pacientes/:id', (req, res) => {
 });
 
 // Rota para remover um paciente por ID
-app.delete('/api/pacientes/:id', (req, res) => {
+app.delete('/api/pacientes/:id', autenticarToken, (req, res) => {
     const { id } = req.params;
 
     // Busca a foto do paciente antes de deletar o registro para evitar órfão
@@ -611,7 +611,7 @@ app.delete('/api/pacientes/:id', (req, res) => {
 });
 
 // Rota para salvar uma nova avaliação (relatório)
-app.post('/api/relatorios', (req, res) => {
+app.post('/api/relatorios', autenticarToken, (req, res) => {
     const {
         usuario_id_relatorio,
         paciente_id_relatorio,
@@ -659,7 +659,7 @@ app.post('/api/relatorios', (req, res) => {
 });
 
 // Rota para buscar todos os relatórios ou filtrados por id_paciente
-app.get('/api/relatorios', (req, res) => {
+app.get('/api/relatorios', autenticarToken, (req, res) => {
     const { id_paciente } = req.query;
 
     let sql = `
@@ -708,7 +708,7 @@ app.get('/api/relatorios', (req, res) => {
 });
 
 // Rota de Estatísticas do Dashboard
-app.get('/api/dashboard/stats', (req, res) => {
+app.get('/api/dashboard/stats', autenticarToken, (req, res) => {
     const qPacientes = "SELECT COUNT(*) AS count FROM paciente";
     const qRelatorios = "SELECT COUNT(*) AS count FROM relatorio";
     const qEncaminhamentos = "SELECT COUNT(*) AS count FROM relatorio WHERE resultado_relatorio = 'RECOMENDADO'";
@@ -763,7 +763,7 @@ app.get('/api/dashboard/stats', (req, res) => {
 });
 
 // Rota para listar profissionais (omitindo senhas por segurança)
-app.get('/api/usuarios', autorizarAdmin, (req, res) => {
+app.get('/api/usuarios', autenticarToken, autorizarAdmin, (req, res) => {
     const sql = "SELECT id_usuario, nome_usuario, sobrenome_usuario, email, tipo_usuario, data_criacao FROM usuario ORDER BY nome_usuario ASC";
 
     db.query(sql, (err, results) => {
@@ -780,35 +780,41 @@ app.get('/api/usuarios', autorizarAdmin, (req, res) => {
 });
 
 // Rota para cadastrar um novo profissional
-app.post('/api/usuarios', autorizarAdmin, (req, res) => {
+app.post('/api/usuarios', autenticarToken, autorizarAdmin, async (req, res) => {
     const { nome_usuario, sobrenome_usuario, email, senha, tipo_usuario } = req.body;
 
     if (!nome_usuario || !sobrenome_usuario || !email || !senha || !tipo_usuario) {
         return res.status(400).json({ sucesso: false, mensagem: "Todos os campos obrigatórios devem ser preenchidos." });
     }
 
-    const sql = "INSERT INTO usuario (nome_usuario, sobrenome_usuario, email, senha, tipo_usuario) VALUES (?, ?, ?, ?, ?)";
-    const valores = [nome_usuario, sobrenome_usuario, email, senha, tipo_usuario];
+    try {
+        const hashSenha = await bcrypt.hash(senha, 12);
+        const sql = "INSERT INTO usuario (nome_usuario, sobrenome_usuario, email, senha, tipo_usuario) VALUES (?, ?, ?, ?, ?)";
+        const valores = [nome_usuario, sobrenome_usuario, email, hashSenha, tipo_usuario];
 
-    db.query(sql, valores, (err, results) => {
-        if (err) {
-            console.error("Erro ao cadastrar profissional:", err);
-            if (err.code === 'ER_DUP_ENTRY') {
-                return res.status(400).json({ sucesso: false, mensagem: "Este e-mail já está cadastrado por outro profissional." });
+        db.query(sql, valores, (err, results) => {
+            if (err) {
+                console.error("Erro ao cadastrar profissional:", err);
+                if (err.code === 'ER_DUP_ENTRY') {
+                    return res.status(400).json({ sucesso: false, mensagem: "Este e-mail já está cadastrado por outro profissional." });
+                }
+                return res.status(500).json({ sucesso: false, mensagem: "Erro ao cadastrar profissional no banco de dados." });
             }
-            return res.status(500).json({ sucesso: false, mensagem: "Erro ao cadastrar profissional no banco de dados." });
-        }
 
-        res.json({
-            sucesso: true,
-            mensagem: "Profissional cadastrado com sucesso!",
-            id_usuario: results.insertId
+            res.json({
+                sucesso: true,
+                mensagem: "Profissional cadastrado com sucesso!",
+                id_usuario: results.insertId
+            });
         });
-    });
+    } catch (err) {
+        console.error("Erro ao gerar hash de senha:", err);
+        return res.status(500).json({ sucesso: false, mensagem: "Erro interno ao cadastrar profissional." });
+    }
 });
 
 // Rota para excluir profissional por ID (Protegendo administrador padrão)
-app.delete('/api/usuarios/:id', autorizarAdmin, (req, res) => {
+app.delete('/api/usuarios/:id', autenticarToken, autorizarAdmin, (req, res) => {
     const { id } = req.params;
 
     if (parseInt(id) === 1) {
@@ -831,7 +837,7 @@ app.delete('/api/usuarios/:id', autorizarAdmin, (req, res) => {
 });
 
 // Rota para excluir relatório por ID (Exclusivo do Admin no controle de frontend)
-app.delete('/api/relatorios/:id', autorizarAdmin, (req, res) => {
+app.delete('/api/relatorios/:id', autenticarToken, autorizarAdmin, (req, res) => {
     const { id } = req.params;
 
     const sql = "DELETE FROM relatorio WHERE id_relatorio = ?";

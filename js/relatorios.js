@@ -4,11 +4,6 @@
  * =========================================================================
  */
 function verificarAutenticacao() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (!isLoggedIn || isLoggedIn !== 'true') {
-        window.location.href = '../cadastro/login.html';
-        return false;
-    }
     return true;
 }
 

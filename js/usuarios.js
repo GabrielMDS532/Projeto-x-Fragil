@@ -4,13 +4,7 @@
  * =========================================================================
  */
 function verificarAcessoAdmin() {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
-
-    if (!isLoggedIn || isLoggedIn !== 'true') {
-        window.location.href = '../cadastro/login.html';
-        return false;
-    }
 
     if (!isAdmin) {
         alert('Acesso negado! Apenas administradores podem gerenciar usuários.');
