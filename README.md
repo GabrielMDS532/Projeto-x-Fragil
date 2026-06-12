@@ -67,4 +67,18 @@ NODE_ENV=development
 ### 5. Executando a Aplicação
 npm start
 
+## 📦 Requisitos de Implantação (Doc. Técnico)
+* **Sistemas Operacionais Homologados:** Windows 10/11, Ubuntu 22.04 LTS.
+* *Para a documentação técnica completa de arquitetura e implantação, consulte o arquivo [relatorio_tecnologias.md](./relatorio_tecnologias.md) na raiz do repositório.*
+
+## 📖 Tutorial de Uso
+Um guia ilustrado passo a passo para o profissional de saúde (usuário final) está disponível em um vídeo disponível abaixo.
+👉 **[Clique aqui para acessar o Tutorial de Uso do Sistema](./Tutorial_de_Uso.pdf)**
+
+## 🎥 Vídeo de Apresentação
+Demonstração completa do funcionamento do sistema, validação do escore clínico e implantação.
+👉 **[Assistir ao Vídeo no YouTube](COLOQUE_SEU_LINK_AQUI)**
+
+## 📄 Licença
+Este projeto é licenciado sob a Licença MIT - consulte o arquivo [LICENSE.md](LICENSE.md) para obter detalhes.
 
