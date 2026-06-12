@@ -48,7 +48,7 @@ async function getLogin(event) {
             const display = `${user.nome_usuario} ${user.sobrenome_usuario}`;
             const isAdmin = user.tipo_usuario === 'ADMIN';
             
-            salvarSecao(user.id_usuario, user.email, isAdmin, display);
+            salvarSecao(user.id_usuario, user.email, isAdmin, display, user.tipo_usuario);
         } else {
             // Se o servidor disse que a senha tá errada
             senhaError.style.display = 'block';
@@ -62,13 +62,14 @@ async function getLogin(event) {
     }
 }
 
-function salvarSecao(userId, email, isAdmin, userDisplayName) {
+function salvarSecao(userId, email, isAdmin, userDisplayName, tipoUsuario) {
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('userId', userId.toString()); // Salva o ID real do profissional logado
     localStorage.setItem('isAdmin', isAdmin.toString());
     localStorage.setItem('userRole', isAdmin ? 'admin' : 'user');
     localStorage.setItem('userEmail', email);
     localStorage.setItem('userDisplayName', userDisplayName);
+    localStorage.setItem('tipo_usuario', tipoUsuario || (isAdmin ? 'ADMIN' : 'USER'));
 
     // Redireciona para o Dashboard
     window.location.href = '../Principais/dashboard.html';

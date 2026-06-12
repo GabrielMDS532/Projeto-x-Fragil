@@ -128,28 +128,3 @@ MySQL 8.0.43 (banco x_fragil)
 
 ---
 
-## 🖥️ Sistemas Operacionais Homologados
-
-* Windows 10 / 11 (Ambiente de Desenvolvimento e Homologação)
-* Ubuntu 22.04 LTS (Ambiente de Produção/Servidor)
-
----
-
-## 🚀 Instruções de Execução (Deploy)
-
-### 1. Pré-requisitos e Banco de Dados
-* Instale o Node.js v24.14.0 (ou superior) e o MySQL 8.0.
-* Acesse o seu gerenciador MySQL e importe o arquivo de dump `xFragilVersao2.sql` para criar a estrutura do banco `x_fragil`.
-
-### 2. Instalação de Dependências
-* Abra o terminal na pasta raiz do projeto.
-* Execute o comando `npm install` para baixar todos os pacotes listados.
-
-### 3. Variáveis de Ambiente
-* Crie um arquivo oculto chamado `.env` na raiz do projeto.
-* Preencha o arquivo com as suas chaves locais de banco de dados e servidor SMTP (conforme chaves de exemplo documentadas no README).
-
-### 4. Inicialização do Servidor
-* No terminal, execute o comando `npm start`.
-* Verifique no console a mensagem de que o servidor está rodando.
-* Abra o seu navegador e acesse `http://localhost:3000`.

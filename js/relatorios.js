@@ -18,8 +18,9 @@ function verificarAutenticacao() {
  * =========================================================================
  */
 let relatoriosFiltradosAtuais = []; // Guarda a lista de relatórios pós-filtragem para exportação
+let usuariosSistema = []; // Guarda a lista de usuários para filtro dinâmico
 
-function inicializarRelatorios() {
+async function inicializarRelatorios() {
     if (!verificarAutenticacao()) return;
 
     // Carregar informações do cabeçalho/menu lateral
@@ -52,8 +53,37 @@ function inicializarRelatorios() {
         });
     }
 
+    // Inicializar o filtro de usuários dinamicamente
+    await carregarFiltroUsuarios();
+
     // Inicializar os filtros de pacientes reais e buscar relatórios
     prepararFiltrosECarregar();
+}
+
+async function carregarFiltroUsuarios() {
+    try {
+        const resposta = await fetch('http://localhost:3000/api/usuarios');
+        const dados = await resposta.json();
+
+        if (dados.sucesso) {
+            usuariosSistema = dados.usuarios;
+            const selectUser = document.getElementById('filterUser');
+            if (selectUser) {
+                selectUser.innerHTML = '<option value="">Todos</option>';
+                usuariosSistema.forEach(usr => {
+                    const option = document.createElement('option');
+                    option.value = usr.id_usuario;
+                    const nomeCompleto = usr.sobrenome_usuario 
+                        ? `${usr.nome_usuario} ${usr.sobrenome_usuario}` 
+                        : usr.nome_usuario;
+                    option.textContent = nomeCompleto;
+                    selectUser.appendChild(option);
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao carregar filtro de usuários:", error);
+    }
 }
 
 async function prepararFiltrosECarregar() {
@@ -160,6 +190,19 @@ function renderizarTabelaRelatorios(relatorios, filtroResultado = 'todos', dataI
     if (dataFim) {
         const dataLimiteFim = new Date(dataFim + 'T23:59:59Z');
         listaFiltrada = listaFiltrada.filter(r => new Date(r.data_relatorio) <= dataLimiteFim);
+    }
+
+    // Filtro adicional de Usuário no frontend
+    const selectUser = document.getElementById('filterUser');
+    const filtroUsuario = selectUser ? selectUser.value : '';
+    if (filtroUsuario) {
+        const usr = usuariosSistema.find(u => String(u.id_usuario) === String(filtroUsuario));
+        if (usr) {
+            listaFiltrada = listaFiltrada.filter(r => 
+                r.nome_usuario === usr.nome_usuario && 
+                r.sobrenome_usuario === usr.sobrenome_usuario
+            );
+        }
     }
 
     // Armazena a lista atualmente filtrada na tabela para a exportação detalhada
