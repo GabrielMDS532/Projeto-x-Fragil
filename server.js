@@ -70,6 +70,9 @@ app.use(express.static('.'));
 // Serve a pasta de uploads estaticamente
 app.use('/uploads', express.static('./uploads'));
 
+// Redireciona a raiz do site para a página inicial
+app.get('/', (req, res) => { res.redirect('/pages/index.html'); });
+
 // --- Configuração do Multer (Upload de Fotos) ---
 const uploadDir = './uploads';
 if (!fs.existsSync(uploadDir)) {
