@@ -80,5 +80,5 @@ Demonstração completa do funcionamento do sistema, validação do escore clín
 👉 **[Assistir ao Vídeo no YouTube](COLOQUE_SEU_LINK_AQUI)**
 
 ## 📄 Licença
-Este projeto é licenciado sob a Licença MIT - consulte o arquivo [LICENSE.md](LICENSE.md) para obter detalhes.
+Este projeto é licenciado sob a Licença MIT - consulte o arquivo [LICENSE.md](LICENSE) para obter detalhes.
 
