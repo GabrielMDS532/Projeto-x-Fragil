@@ -72,8 +72,8 @@ npm start
 * *Para a documentação técnica completa de arquitetura e implantação, consulte o arquivo [relatorio_tecnologias.md](./relatorio_tecnologias.md) na raiz do repositório.*
 
 ## 📖 Tutorial de Uso
-Um guia ilustrado passo a passo para o profissional de saúde (usuário final) está disponível em um vídeo disponível abaixo.
-👉 **[Clique aqui para acessar o Tutorial de Uso do Sistema](./Tutorial_de_Uso.pdf)**
+Um guia ilustrado passo a passo para o profissional de saúde (usuário final) está disponível em um pdf disponível abaixo.
+👉 **[Clique aqui para acessar o Tutorial de Uso do Sistema](./tutorial_de_Uso.pdf)**
 
 ## 🎥 Vídeo de Apresentação
 Demonstração completa do funcionamento do sistema, validação do escore clínico e implantação.
