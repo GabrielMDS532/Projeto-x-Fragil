@@ -72,7 +72,7 @@ npm start
 * *Para a documentação técnica completa de arquitetura e implantação, consulte o arquivo [relatorio_tecnologias.md](./relatorio_tecnologias.md) na raiz do repositório.*
 
 ## 📖 Tutorial de Uso
-Um guia ilustrado passo a passo para o profissional de saúde (usuário final) está disponível em um vídeo disponível abaixo.
+Um guia ilustrado passo a passo para o profissional de saúde (usuário final) está disponível em um pdf disponível abaixo.
 👉 **[Clique aqui para acessar o Tutorial de Uso do Sistema](./tutorial_de_Uso.pdf)**
 
 ## 🎥 Vídeo de Apresentação
