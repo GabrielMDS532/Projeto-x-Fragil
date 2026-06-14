@@ -77,7 +77,7 @@ Um guia ilustrado passo a passo para o profissional de saúde (usuário final) e
 
 ## 🎥 Vídeo de Apresentação
 Demonstração completa do funcionamento do sistema, validação do escore clínico e implantação.
-👉 **[Assistir ao Vídeo no YouTube](COLOQUE_SEU_LINK_AQUI)**
+👉 **[Assistir ao Vídeo no YouTube](https://youtu.be/Z--evE58Lo8?is=sRIu9ynDwxLOV4VJ)**
 
 ## 📄 Licença
 Este projeto é licenciado sob a Licença MIT - consulte o arquivo [LICENSE.md](LICENSE) para obter detalhes.
