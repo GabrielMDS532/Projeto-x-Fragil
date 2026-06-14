@@ -73,7 +73,7 @@ npm start
 
 ## 📖 Tutorial de Uso
 Um guia ilustrado passo a passo para o profissional de saúde (usuário final) está disponível em um pdf disponível abaixo.
-👉 **[Clique aqui para acessar o Tutorial de Uso do Sistema](./tutorial_de_Uso.pdf)**
+👉 **[Clique aqui para acessar o Tutorial de Uso do Sistema](./tutorial_de_uso.pdf)**
 
 ## 🎥 Vídeo de Apresentação
 Demonstração completa do funcionamento do sistema, validação do escore clínico e implantação.
